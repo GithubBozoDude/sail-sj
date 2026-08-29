@@ -355,7 +355,7 @@
         let url = rawUrl.trim()
         if (!url) return
         if (!url.includes('.')) {
-            url = 'https://search.brave.com/search?q=' + encodeURIComponent(url)
+            url = 'https://duckduckgo.com/search?q=' + encodeURIComponent(url)
         } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
             url = 'https://' + url
         }
