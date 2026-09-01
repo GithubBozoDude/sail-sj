@@ -3,106 +3,405 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sail - Scramjet</title>
-    <!-- MAKE SURE TO REROUTE THESE PATHS TO YOUR REAL FILES -->
+    <title>Sail — Scramjet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- ── Original dev's exact init — do not touch ── -->
     <script src="/sail/baremux/index.js"></script>
     <script src="/sail/scram/scramjet.all.js"></script>
     <script>
-        // MAKE SURE THIS MATCHES THE PATH TO YOUR REAL SW
-        // IMPORTANT: EDIT SW.JS TO POINT TO THE PATH OF YOUR REAL SCRAMJET FILES
         navigator.serviceWorker.register("/sail/sw.js")
     </script>
-</head>
-<body>
+
     <style>
-        body { margin: 0; }
-        .topbar {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px;
-            box-sizing: border-box;
-            width: 100%;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #07071f;
+            --p1:      #8b5cf6;
+            --p2:      #6d28d9;
+            --p-light: #c4b5fd;
+            --p-glow:  rgba(139,92,246,0.35);
+            --surface: rgba(255,255,255,0.04);
+            --surface2:rgba(255,255,255,0.07);
+            --border:  rgba(255,255,255,0.08);
+            --border2: rgba(139,92,246,0.3);
+            --text:    #f1f0ff;
+            --muted:   rgba(196,181,253,0.5);
+            --mono:    'JetBrains Mono', monospace;
         }
-        #bar { flex: 1; min-width: 0; }
-        #server { flex: 0 0 140px; padding: 2px; }
-        iframe {
-            height: 95vh;
-            width: 100vw;
-            background: #cfcfcf;
-            position: absolute;
-            left:0;
-            bottom: 0;
-            height: calc(95vh - 42px);
+
+        html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 55% at 0% 0%,    rgba(109,40,217,0.22) 0%, transparent 65%),
+                radial-gradient(ellipse 55% 50% at 100% 100%, rgba(67,56,202,0.18) 0%, transparent 65%),
+                radial-gradient(ellipse 40% 40% at 50% 50%,  rgba(139,92,246,0.05) 0%, transparent 70%);
+        }
+
+        /* ── Toolbar ── */
+        #toolbar {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 24px; height: 52px;
+            background: rgba(8,7,28,0.75);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { display: flex; align-items: center; gap: 7px; flex-shrink: 0; cursor: pointer; user-select: none; }
+        .logo-icon { width: 26px; height: 26px; }
+        .logo-text {
+            font-size: 15px; font-weight: 700; letter-spacing: -0.3px;
+            background: linear-gradient(120deg, var(--p-light), var(--p1));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+        #bar-wrap { flex: 1; position: relative; display: flex; align-items: center; }
+        .bar-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+
+        #bar {
+            width: 100%; height: 36px; padding: 0 12px 0 32px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 9px; color: var(--text);
+            font-family: var(--mono); font-size: 12.5px; outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            caret-color: var(--p-light);
+        }
+        #bar::placeholder { color: var(--muted); font-style: italic; }
+        #bar:focus { border-color: var(--border2); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
+
+        #go-btn {
+            height: 36px; padding: 0 18px; flex-shrink: 0;
+            background: var(--p1); border: none; border-radius: 9px;
+            color: #fff; font-family: 'Inter', sans-serif;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: background 0.18s, box-shadow 0.18s, transform 0.1s;
+        }
+        #go-btn:hover { background: #7c3aed; box-shadow: 0 0 18px var(--p-glow); transform: translateY(-1px); }
+        #go-btn:active { transform: scale(0.97); }
+
+        .select-wrap { flex-shrink: 0; }
+        #wispSelect {
+            height: 36px; padding: 0 26px 0 10px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 9px; color: var(--muted);
+            font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+            outline: none; cursor: pointer; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b7db5' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 6px center; background-size: 13px;
+            transition: border-color 0.2s;
+        }
+        #wispSelect:focus { border-color: var(--border2); color: var(--text); }
+        #wispSelect option { background: #12082f; color: var(--text); }
+
+        .status-dot {
+            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+            background: #fbbf24; transition: background 0.4s, box-shadow 0.4s;
+        }
+        .status-dot.online  { background: #34d399; box-shadow: 0 0 0 2px rgba(52,211,153,0.25); animation: pulse-dot 2.6s ease-in-out infinite; }
+        .status-dot.offline { background: #f87171; box-shadow: 0 0 0 2px rgba(248,113,113,0.25); animation: pulse-dot-red 2.6s ease-in-out infinite; }
+        .status-dot.checking{ background: #fbbf24; box-shadow: 0 0 0 2px rgba(251,191,36,0.25); animation: none; }
+
+        /* ── Frame ── */
+        #frame-wrap { position: relative; z-index: 1; width: 100%; height: calc(100vh - 52px); }
+        iframe { display: block; width: 100%; height: 100%; border: none; }
+
+        #loading-bar {
+            position: absolute; top: 0; left: 0; height: 2px; width: 0%;
+            background: linear-gradient(90deg, var(--p2), var(--p1), var(--p-light));
+            z-index: 20; opacity: 0; pointer-events: none; box-shadow: 0 0 8px var(--p1);
+        }
+
+        /* ── Homepage ── */
+        #homepage {
+            position: absolute; inset: 0; z-index: 8;
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            grid-template-columns: 1fr auto 1fr;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse 60% 55% at 0% 0%,    rgba(109,40,217,0.22) 0%, transparent 65%),
+                radial-gradient(ellipse 55% 50% at 100% 100%, rgba(67,56,202,0.18) 0%, transparent 65%);
+        }
+        #homepage.hidden { display: none; }
+
+        .home-left  { grid-column: 1; grid-row: 1/4; }
+        .home-right { grid-column: 3; grid-row: 1/4; }
+
+        .home-center {
+            grid-column: 2; grid-row: 2;
+            display: flex; flex-direction: column; align-items: center; gap: 40px;
+        }
+
+        .home-clock {
+            font-size: clamp(80px, 12vw, 140px);
+            font-weight: 300; letter-spacing: -6px; line-height: 1; text-align: center;
+            background: linear-gradient(160deg, #fff 15%, var(--p-light) 55%, var(--p1) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .home-date {
+            margin-top: 8px; font-size: 11px; font-weight: 500;
+            letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-align: center;
+        }
+
+        .home-search-wrap { position: relative; width: min(600px, 80vw); }
+        .home-search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+        #home-bar {
+            width: 100%; height: 52px; padding: 0 148px 0 48px;
+            background: var(--surface2); border: 1px solid var(--border2);
+            border-radius: 14px; color: var(--text);
+            font-family: var(--mono); font-size: 13px; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            caret-color: var(--p-light);
+        }
+        #home-bar::placeholder { color: var(--muted); font-style: italic; }
+        #home-bar:focus { background: rgba(255,255,255,0.07); border-color: var(--p1); box-shadow: 0 0 0 4px rgba(139,92,246,0.13), 0 8px 32px rgba(0,0,0,0.35); }
+        #home-go {
+            position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+            height: 40px; padding: 0 20px;
+            background: var(--p1); border: none; border-radius: 10px;
+            color: #fff; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: background 0.18s, box-shadow 0.18s;
+        }
+        #home-go:hover { background: #7c3aed; box-shadow: 0 0 16px var(--p-glow); }
+
+        .shortcuts-wrap { width: min(800px, 90vw); }
+        .shortcuts-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; }
+
+        .shortcut-card {
+            aspect-ratio: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; cursor: pointer; position: relative; overflow: hidden;
+            transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .shortcut-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(196,181,253,0.06) 0%, transparent 55%); pointer-events: none; }
+        .shortcut-card:hover { transform: translateY(-5px) scale(1.05); border-color: var(--border2); background: var(--surface2); box-shadow: 0 0 28px var(--p-glow), 0 16px 40px rgba(0,0,0,0.4); }
+        .shortcut-card:active { transform: scale(0.96); transition: transform 0.1s; }
+
+        .shortcut-icon { width: 38px; height: 38px; color: var(--p1); transition: color 0.2s, filter 0.2s; }
+        .shortcut-card:hover .shortcut-icon { color: var(--p-light); filter: drop-shadow(0 0 7px rgba(139,92,246,0.55)); }
+        .shortcut-name { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.03em; transition: color 0.2s; text-align: center; padding: 0 4px; }
+        .shortcut-card:hover .shortcut-name { color: var(--text); }
+
+        @keyframes pulse-dot {
+            0%,100% { box-shadow: 0 0 0 2px rgba(52,211,153,0.2); }
+            50%      { box-shadow: 0 0 0 4px rgba(52,211,153,0.38); }
+        }
+        @keyframes pulse-dot-red {
+            0%,100% { box-shadow: 0 0 0 2px rgba(248,113,113,0.2); }
+            50%      { box-shadow: 0 0 0 4px rgba(248,113,113,0.45); }
         }
     </style>
+</head>
+<body>
 
-    <div class="topbar">
-        <input type="text" placeholder="url" id="bar">
-        <button onclick="nav()">Go</button>
-        <select id="server" aria-label="Wisp server" onchange="changeServer()">
-            <option value="wss://anura.pro/" selected>Anura</option>
+<div id="toolbar">
+    <div class="logo" onclick="goHome()" title="Home">
+        <svg class="logo-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="lg" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#c4b5fd"/>
+                    <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+            </defs>
+            <path d="M14 2.5C14 2.5 4.5 9.5 4.5 21H14Z" fill="url(#lg)" opacity="0.9"/>
+            <path d="M14 6.5C14 6.5 21.5 11.5 22.5 21H14Z" fill="url(#lg)" opacity="0.45"/>
+            <line x1="14" y1="2.5" x2="14" y2="24.5" stroke="url(#lg)" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="4.5" y1="24.5" x2="23.5" y2="24.5" stroke="url(#lg)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="logo-text">Sail</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div id="bar-wrap">
+        <svg class="bar-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" placeholder="Search or enter a URL…" id="bar" autocomplete="off" spellcheck="false">
+    </div>
+
+    <button id="go-btn" onclick="nav()">Go →</button>
+    <div class="divider"></div>
+
+    <div class="select-wrap">
+        <select id="wispSelect" onchange="switchWisp()">
             <option value="wss://wisp.mercurywork.shop/">Mercury</option>
+            <option value="wss://anura.pro/">Anura</option>
             <option value="wss://wispserver.duckdns.org:3000/">Mine</option>
         </select>
     </div>
-    <iframe src="" frameborder="0" id="frame"></iframe>
 
-    <script>
-        const connection = new BareMux.BareMuxConnection("/sail/baremux/worker.js")
-        // IMPORTANT: YOU MUST CHANGE YOUR WISP SERVER IN PRODUCTION. ONLY USE THIS FOR TESTING.
-        // MAKE SURE YOU REROUTE TO YOUR REAL FILES!
-        const server = document.getElementById("server")
-        let wispServer = server.value
-        connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: wispServer }])
+    <div class="status-dot checking" id="statusDot" title="Checking…"></div>
+</div>
 
-        function changeServer() {
-            wispServer = server.value
-            connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: wispServer }])
+<div id="frame-wrap">
+    <div id="loading-bar"></div>
+
+    <div id="homepage">
+        <div class="home-left"></div>
+        <div class="home-center">
+            <div>
+                <div class="home-clock" id="homeClock">00:00</div>
+                <div class="home-date"  id="homeDate"></div>
+            </div>
+
+            <div class="home-search-wrap">
+                <svg class="home-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" id="home-bar" placeholder="Where to today?" autocomplete="off" spellcheck="false">
+                <button id="home-go" onclick="navHomeBar()">Navigate →</button>
+            </div>
+
+            <div class="shortcuts-wrap">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-card" onclick="shortcutNav('https://www.youtube.com')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><rect x="2" y="9" width="44" height="30" rx="9" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="2"/><path d="M20 17 L20 31 L33 24 Z" fill="currentColor"/></svg>
+                        <span class="shortcut-name">YouTube</span>
+                    </div>
+                    <div class="shortcut-card" onclick="shortcutNav('https://www.wikipedia.org')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2"/><ellipse cx="24" cy="24" rx="9" ry="20" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.4"/><line x1="4" y1="24" x2="44" y2="24" stroke="currentColor" stroke-width="1.4" opacity="0.4"/><path d="M13 19 L17 33 L21 23 L24 29 L27 23 L31 33 L35 19" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="shortcut-name">Wikipedia</span>
+                    </div>
+                    <div class="shortcut-card" onclick="shortcutNav('https://play.geforcenow.com')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><path d="M24 3 L42 11 V28 C42 37 24 45 24 45 C24 45 6 37 6 28 V11 Z" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2"/><path d="M27 13 L18 27 H25 L21 37 L31 23 H24 Z" fill="currentColor"/></svg>
+                        <span class="shortcut-name">GeForce Now</span>
+                    </div>
+                    <div class="shortcut-card" onclick="shortcutNav('https://www.google.com')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="2"/><path d="M38 24 H26 V30 H33 Q31 37 24 37 Q15 37 13 28 Q11 19 17 14 Q23 10 31 13" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="shortcut-name">Google</span>
+                    </div>
+                    <div class="shortcut-card" onclick="shortcutNav('https://www.reddit.com')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="28" r="15" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="26" r="2.8" fill="currentColor"/><circle cx="30" cy="26" r="2.8" fill="currentColor"/><path d="M17 33 Q24 39 31 33" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24" y1="13" x2="24" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="6" r="2.5" fill="currentColor"/></svg>
+                        <span class="shortcut-name">Reddit</span>
+                    </div>
+                    <div class="shortcut-card" onclick="shortcutNav('https://www.github.com')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="21" r="14" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="20" r="2.4" fill="currentColor"/><circle cx="29" cy="20" r="2.4" fill="currentColor"/><path d="M15 31 Q10 39 9 46" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M24 35 Q24 41 24 46" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M33 31 Q38 39 39 46" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                        <span class="shortcut-name">GitHub</span>
+                    </div>
+                    <div class="shortcut-card" onclick="shortcutNav('https://discord.com/app')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><path d="M7 8 H41 Q43 8 43 10 V32 Q43 34 41 34 H29 L24 42 L19 34 H7 Q5 34 5 32 V10 Q5 8 7 8 Z" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2"/><ellipse cx="17" cy="22" rx="4" ry="4.5" fill="currentColor"/><ellipse cx="31" cy="22" rx="4" ry="4.5" fill="currentColor"/></svg>
+                        <span class="shortcut-name">Discord</span>
+                    </div>
+                    <div class="shortcut-card" onclick="shortcutNav('https://www.twitch.tv')">
+                        <svg class="shortcut-icon" viewBox="0 0 48 48" fill="none"><path d="M7 4 H41 V30 H31 L24 38 L17 30 H7 Z" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="15" y="11" width="4" height="13" rx="2" fill="currentColor"/><rect x="25" y="11" width="4" height="13" rx="2" fill="currentColor"/></svg>
+                        <span class="shortcut-name">Twitch</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="home-right"></div>
+    </div>
+
+    <iframe src="" id="frame"></iframe>
+</div>
+
+<script>
+    // ── Original dev's exact working init ──────────────────────────────────
+    const connection = new BareMux.BareMuxConnection("/sail/baremux/worker.js")
+    connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: "wss://wisp.mercurywork.shop/" }])
+
+    const { ScramjetController } = $scramjetLoadController()
+    const scramjet = new ScramjetController({
+        files: {
+            all:  "/sail/scram/scramjet.all.js",
+            wasm: "/sail/scram/scramjet.wasm.wasm",
+            sync: "/sail/scram/scramjet.sync.js"
+        },
+        prefix: "/sail/go/"
+    })
+    scramjet.init()
+    // ──────────────────────────────────────────────────────────────────────
+
+    const frame      = document.getElementById("frame")
+    const bar        = document.getElementById("bar")
+    const loadingBar = document.getElementById("loading-bar")
+    const homepage   = document.getElementById("homepage")
+    const clockEl    = document.getElementById("homeClock")
+    const dateEl     = document.getElementById("homeDate")
+
+    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
+
+    function updateClock() {
+        const now = new Date()
+        clockEl.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0')
+        dateEl.textContent  = DAYS[now.getDay()] + ' · ' + MONTHS[now.getMonth()] + ' ' + now.getDate()
+    }
+    updateClock()
+    setInterval(updateClock, 1000)
+
+    function showLoader() {
+        loadingBar.style.opacity = '1'
+        loadingBar.style.width = '70%'
+        loadingBar.style.transition = 'width 1.2s ease'
+    }
+    function hideLoader() {
+        loadingBar.style.width = '100%'
+        loadingBar.style.transition = 'width 0.3s ease, opacity 0.4s ease 0.3s'
+        setTimeout(() => { loadingBar.style.opacity = '0'; loadingBar.style.width = '0%'; loadingBar.style.transition = 'none' }, 700)
+    }
+
+    function navigate(rawUrl) {
+        let url = rawUrl.trim()
+        if (!url) return
+        if (!url.includes('.')) {
+            url = 'https://duckduckgo.com/search?q=' + encodeURIComponent(url)
+        } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url
         }
+        homepage.classList.add('hidden')
+        showLoader()
+        bar.value = rawUrl.trim()
+        frame.src = scramjet.encodeUrl(url)
+    }
 
-        const frame = document.getElementById("frame")
-        const bar = document.getElementById("bar")
+    function nav()        { navigate(bar.value) }
+    function navHomeBar() { const v = document.getElementById('home-bar').value; navigate(v) }
+    function shortcutNav(url) { navigate(url) }
+    function goHome()     { homepage.classList.remove('hidden'); frame.src = ''; bar.value = '' }
 
-        const { ScramjetController } = $scramjetLoadController()
-        const scramjet = new ScramjetController({
-            // MAKE SURE TO REROUTE THESE TO YOUR REAL FILES!
-            files: {
-                all: "/sail/scram/scramjet.all.js",
-                wasm: "/sail/scram/scramjet.wasm.wasm",
-                sync: "/sail/scram/scramjet.sync.js"
-            },
-            prefix: "/sail/go/" // You can change your prefix if you want, it doesn't matter what it is.
-        })
-        scramjet.init()
+    frame.addEventListener('load', hideLoader)
+    bar.addEventListener('keydown', e => { if (e.key === 'Enter') nav() })
+    document.getElementById('home-bar').addEventListener('keydown', e => { if (e.key === 'Enter') navHomeBar() })
 
-        function nav() {
-            let url = bar.value.trim()
-            if (!url) return;
+    // ── Wisp switcher ─────────────────────────────────────────────────────
+    function switchWisp() {
+        const url = document.getElementById('wispSelect').value
+        connection.setTransport('/sail/libcurl/index.mjs', [{ websocket: url }])
+        probeWisp(url)
+    }
 
-            if (!url.includes(".")) {
-                // Feel free to change the search engine to any of the following:
-                // https://google.com/search?q=
-                // https://duckduckgo.com/search?q=
-                // https://bing.com/search?q=
-                // https://qwant.com/search?q=
-                // You can also choose one of your own
-                url = "https://search.brave.com/search?q=" + encodeURIComponent(url)
-            } else if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                url = "https://" + url
-            }
-
-            frame.src = scramjet.encodeUrl(url)
+    // ── Wisp status dot ───────────────────────────────────────────────────
+    let probeTimer = null
+    function probeWisp(url) {
+        const dot = document.getElementById('statusDot')
+        dot.className = 'status-dot checking'
+        dot.title = 'Checking…'
+        clearTimeout(probeTimer)
+        let settled = false, ws
+        try { ws = new WebSocket(url) } catch(e) { setStatus(false); return }
+        const timeout = setTimeout(() => { if (!settled) { settled = true; setStatus(false); try { ws.close() } catch(_){} } }, 5000)
+        ws.onopen  = () => { if (!settled) { settled = true; clearTimeout(timeout); setStatus(true);  try { ws.close() } catch(_){} } }
+        ws.onerror = () => { if (!settled) { settled = true; clearTimeout(timeout); setStatus(false) } }
+        ws.onclose = e => { if (!settled) { settled = true; clearTimeout(timeout); setStatus(e.code !== 1006) } }
+        function setStatus(online) {
+            dot.className = 'status-dot ' + (online ? 'online' : 'offline')
+            dot.title = online ? 'Connected' : 'Offline'
+            probeTimer = setTimeout(() => probeWisp(document.getElementById('wispSelect').value), 30000)
         }
+    }
+    probeWisp('wss://wisp.mercurywork.shop/')
+</script>
 
-        bar.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                nav()
-            }
-        })
-    </script>  
-    
 </body>
 </html>
