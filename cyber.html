@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sail</title>
+    <link rel="stylesheet" media="print" onload="this.media=\'all\'" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --bg:#030508; --r:#ff003c; --rd:rgba(255,0,60,0.15); --rb:rgba(255,0,60,0.06); --rim:rgba(255,0,60,0.12); --tx:#e8eaf0; --dm:rgba(255,255,255,0.2); --mono:'Share Tech Mono',monospace; --title:'Rajdhani',sans-serif; }
+        html,body { height:100%; width:100%; overflow:hidden; background:var(--bg); color:var(--tx); font-family:var(--title); }
+        body::before { content:''; position:fixed; inset:0; pointer-events:none; background-image:linear-gradient(rgba(255,0,60,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,0,60,0.035) 1px,transparent 1px); background-size:32px 32px; }
+
+        #toolbar { position:relative; z-index:10; display:flex; align-items:center; height:50px; background:rgba(3,5,8,0.97); border-bottom:1px solid var(--rim); flex-shrink:0; box-shadow:0 1px 0 rgba(255,0,60,0.08),0 4px 20px rgba(0,0,0,0.6); }
+        .brand { display:flex; align-items:center; gap:10px; padding:0 22px; height:100%; border-right:1px solid var(--rim); cursor:pointer; flex-shrink:0; transition:background 0.15s; }
+        .brand:hover { background:rgba(255,0,60,0.04); }
+        .hex { width:24px; height:24px; position:relative; flex-shrink:0; }
+        .hex::before { content:''; position:absolute; inset:0; border:1.5px solid var(--r); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+        .hex::after { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:7px; height:7px; background:var(--r); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); box-shadow:0 0 8px var(--r); }
+        .brand-name { font-size:18px; font-weight:700; letter-spacing:0.2em; color:var(--r); text-transform:uppercase; text-shadow:0 0 12px rgba(255,0,60,0.4); }
+        #bar-sec { flex:1; display:flex; align-items:center; padding:0 16px; gap:10px; height:100%; border-right:1px solid var(--rim); }
+        .bar-pfx { font-size:12px; color:rgba(255,0,60,0.35); flex-shrink:0; letter-spacing:0.05em; font-family:var(--mono); }
+        #bar { flex:1; height:100%; background:transparent; border:none; color:var(--tx); font-family:var(--title); font-size:15px; font-weight:500; outline:none; caret-color:var(--r); letter-spacing:0.04em; }
+        #bar::placeholder { color:rgba(255,255,255,0.12); }
+        #go-btn { flex-shrink:0; height:32px; padding:0 20px; background:var(--r); border:none; color:#fff; font-family:var(--title); font-size:13px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; box-shadow:0 0 12px rgba(255,0,60,0.3); }
+        #go-btn:hover { background:#ff1a50; box-shadow:0 0 20px rgba(255,0,60,0.5); }
+        .nav-r { display:flex; align-items:center; height:100%; flex-shrink:0; }
+        .wisp-w { display:flex; align-items:center; gap:8px; padding:0 18px; height:100%; border-right:1px solid var(--rim); }
+        .wlbl { font-size:11px; color:rgba(255,0,60,0.35); text-transform:uppercase; letter-spacing:0.12em; }
+        #wispSelect { background:transparent; border:none; color:rgba(255,255,255,0.35); font-family:var(--title); font-size:13px; font-weight:500; outline:none; cursor:pointer; appearance:none; padding-right:16px; letter-spacing:0.05em; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,0,60,0.3)' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0 center; background-size:13px; }
+        #wispSelect option { background:#0a0508; }
+        .stat-w { display:flex; align-items:center; gap:8px; padding:0 18px; height:100%; }
+        .slbl { font-size:11px; color:rgba(255,0,60,0.35); text-transform:uppercase; letter-spacing:0.12em; }
+        #statusDot { width:7px; height:7px; background:rgba(255,0,60,0.2); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); transition:background 0.4s,box-shadow 0.4s; flex-shrink:0; }
+        #statusDot.online  { background:var(--r); box-shadow:0 0 8px rgba(255,0,60,0.7); animation:pulse-c 1.8s ease-in-out infinite; }
+        #statusDot.offline { background:#444; box-shadow:none; }
+
+        #frame-wrap { position:relative; z-index:1; width:100%; height:calc(100vh - 50px); }
+        iframe { display:block; width:100%; height:100%; border:none; }
+        #loading-bar { position:absolute; top:0; left:0; height:2px; width:0%; background:var(--r); z-index:20; opacity:0; pointer-events:none; box-shadow:0 0 10px var(--r); }
+
+        #homepage { position:absolute; inset:0; z-index:8; display:flex; flex-direction:column; background:var(--bg); overflow:hidden; }
+        #homepage.hidden { display:none; }
+        .scanlines { position:absolute; inset:0; pointer-events:none; z-index:1; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px); }
+        .hpcenter { position:relative; z-index:2; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:36px; padding:40px; }
+        .hero { text-align:center; }
+        .bigtime { font-size:clamp(80px,14vw,160px); font-weight:700; letter-spacing:-0.02em; line-height:0.9; color:var(--r); text-shadow:0 0 40px rgba(255,0,60,0.4),0 0 80px rgba(255,0,60,0.15); }
+        .subtitle { margin-top:12px; font-size:14px; font-weight:500; letter-spacing:0.3em; color:rgba(255,0,60,0.35); text-transform:uppercase; font-family:var(--mono); }
+        .divider { width:200px; height:1px; background:linear-gradient(to right,transparent,rgba(255,0,60,0.5),transparent); }
+        .searchwrap { position:relative; width:min(600px,85vw); }
+        #home-bar { width:100%; height:52px; padding:0 150px 0 20px; background:rgba(255,0,60,0.04); border:1px solid rgba(255,0,60,0.3); color:var(--tx); font-family:var(--title); font-size:16px; font-weight:500; outline:none; caret-color:var(--r); letter-spacing:0.04em; box-shadow:inset 0 0 20px rgba(255,0,60,0.03),0 0 20px rgba(255,0,60,0.06); transition:border-color 0.2s,box-shadow 0.2s; }
+        #home-bar::placeholder { color:rgba(255,255,255,0.12); letter-spacing:0.08em; }
+        #home-bar:focus { border-color:rgba(255,0,60,0.6); box-shadow:inset 0 0 20px rgba(255,0,60,0.05),0 0 30px rgba(255,0,60,0.12); }
+        #home-go { position:absolute; right:0; top:0; bottom:0; padding:0 24px; background:var(--r); border:none; color:#fff; font-family:var(--title); font-size:14px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; }
+        #home-go:hover { background:#ff1a50; box-shadow:0 0 20px rgba(255,0,60,0.4); }
+        .scgrid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(2,1fr); gap:8px; width:min(760px,90vw); }
+        .sc { display:flex; align-items:center; gap:12px; padding:14px 18px; background:rgba(255,0,60,0.04); border:1px solid rgba(255,0,60,0.1); cursor:pointer; position:relative; overflow:hidden; transition:border-color 0.15s,background 0.15s,box-shadow 0.15s; }
+        .sc::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:rgba(255,0,60,0.4); transform:scaleX(0); transform-origin:left; transition:transform 0.2s; }
+        .sc:hover { border-color:rgba(255,0,60,0.3); background:rgba(255,0,60,0.07); box-shadow:0 0 15px rgba(255,0,60,0.05); }
+        .sc:hover::after { transform:scaleX(1); }
+        .sc svg { width:22px; height:22px; color:rgba(255,0,60,0.3); flex-shrink:0; transition:color 0.15s,filter 0.15s; }
+        .sc:hover svg { color:var(--r); filter:drop-shadow(0 0 4px rgba(255,0,60,0.5)); }
+        .scname { font-size:14px; font-weight:700; color:rgba(255,255,255,0.3); letter-spacing:0.08em; text-transform:uppercase; transition:color 0.15s; }
+        .sc:hover .scname { color:rgba(255,255,255,0.8); }
+        .scurl { font-size:10px; color:rgba(255,0,60,0.22); margin-top:1px; font-family:var(--mono); letter-spacing:0.04em; }
+        .hpbot { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:10px 32px; border-top:1px solid rgba(255,0,60,0.1); flex-shrink:0; }
+        .hpbot span { font-size:11px; color:rgba(255,0,60,0.25); letter-spacing:0.12em; text-transform:uppercase; font-family:var(--mono); }
+        .hpbot b { color:rgba(255,0,60,0.4); font-weight:400; }
+        .theme-btn { position:fixed; bottom:16px; right:16px; padding:8px 14px; background:rgba(255,0,60,0.05); border:1px solid rgba(255,0,60,0.15); color:rgba(255,0,60,0.3); font-family:var(--mono); font-size:10px; cursor:pointer; z-index:100; transition:background 0.2s,color 0.2s; text-decoration:none; letter-spacing:0.1em; }
+        .theme-btn:hover { background:rgba(255,0,60,0.1); color:rgba(255,0,60,0.6); }
+        @keyframes pulse-c { 0%,100%{box-shadow:0 0 8px rgba(255,0,60,0.6)} 50%{box-shadow:0 0 16px rgba(255,0,60,1)} }
+    </style>
+</head>
+<body>
+<div id="toolbar">
+    <div class="brand" onclick="goHome()"><div class="hex"></div><span class="brand-name">Sail</span></div>
+    <div id="bar-sec"><span class="bar-pfx">://</span><input type="text" id="bar" placeholder="target destination" autocomplete="off" spellcheck="false"><button id="go-btn" onclick="nav()">ENTER</button></div>
+    <div class="nav-r">
+        <div class="wisp-w"><span class="wlbl">Node</span><select id="wispSelect" onchange="switchWisp()"><option value="wss://wisp.mercurywork.shop/">Mercury</option><option value="wss://anura.pro/">Anura</option><option value="wss://wispserver.duckdns.org:3000/">Mine</option></select></div>
+        <div class="stat-w"><span class="slbl">Status</span><div id="statusDot"></div></div>
+    </div>
+</div>
+<div id="frame-wrap">
+    <div id="loading-bar"></div>
+    <div id="homepage">
+        <div class="scanlines"></div>
+        <div class="hpcenter">
+            <div class="hero"><div class="bigtime" id="hclock">00:00</div><div class="subtitle" id="hdate">--</div></div>
+            <div class="divider"></div>
+            <div class="searchwrap"><input type="text" id="home-bar" placeholder="enter target url or query" autocomplete="off" spellcheck="false"><button id="home-go" onclick="navHomeBar()">LAUNCH</button></div>
+            <div class="scgrid">
+                <div class="sc" onclick="go('https://www.youtube.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3V9z" fill="currentColor" stroke="none"/></svg><div><div class="scname">YouTube</div><div class="scurl">youtube.com</div></div></div>
+                <div class="sc" onclick="go('https://www.wikipedia.org')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9h1l2 6 2-4 2 4 2-6h1"/></svg><div><div class="scname">Wikipedia</div><div class="scurl">wikipedia.org</div></div></div>
+                <div class="sc" onclick="go('https://play.geforcenow.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v7c0 5-8 9-8 9S4 18 4 13V6z"/><path d="m13 8-4 7h4l-1 5 5-8h-4z" fill="currentColor" stroke="none"/></svg><div><div class="scname">GeForce</div><div class="scurl">geforcenow.com</div></div></div>
+                <div class="sc" onclick="go('https://www.google.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg><div><div class="scname">Google</div><div class="scurl">google.com</div></div></div>
+                <div class="sc" onclick="go('https://www.reddit.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><circle cx="8.5" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1" fill="currentColor" stroke="none"/><path d="M9 17q3 2 6 0"/></svg><div><div class="scname">Reddit</div><div class="scurl">reddit.com</div></div></div>
+                <div class="sc" onclick="go('https://www.github.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2S18 4 16 5a13.3 13.3 0 0 0-7 0C7 4 5.9 4.6 5.9 4.6A4.2 4.2 0 0 0 5.8 8 4.6 4.6 0 0 0 4.5 11c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg><div><div class="scname">GitHub</div><div class="scurl">github.com</div></div></div>
+                <div class="sc" onclick="go('https://discord.com/app')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7s-2-2-6-2l-1 2c-1.3-.2-2.7-.2-4 0L8 5C4 5 2 7 2 7S-.5 12 1 17c2 2 5 3 5 3l1-2c1 .4 2.3.7 3.5.7H14l1 2s3-1 5-3c1.5-5-1-10-1-10z"/><circle cx="8.5" cy="13" r="1.5" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1.5" fill="currentColor" stroke="none"/></svg><div><div class="scname">Discord</div><div class="scurl">discord.com</div></div></div>
+                <div class="sc" onclick="go('https://www.twitch.tv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2 2 6v14h5v3h3l3-3h4l5-5V2H3z"/><line x1="9" y1="8" x2="9" y2="14"/><line x1="14" y1="8" x2="14" y2="14"/></svg><div><div class="scname">Twitch</div><div class="scurl">twitch.tv</div></div></div>
+            </div>
+        </div>
+        <div class="hpbot"><span>SAIL · <b>SCRAMJET PROXY</b></span><span id="hdate2">--</span></div>
+    </div>
+    <iframe src="" id="frame"></iframe>
+</div>
+<a class="theme-btn" href="index.html">⬡ Change Theme</a>
+    <script src="/sail/baremux/index.js"></script>
+    <script src="/sail/scram/scramjet.all.js"></script>
+    <script>navigator.serviceWorker.register("/sail/sw.js")</script>
+<script>
+    const connection = new BareMux.BareMuxConnection("/sail/baremux/worker.js")
+    connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: "wss://wisp.mercurywork.shop/" }])
+    const { ScramjetController } = $scramjetLoadController()
+    const scramjet = new ScramjetController({ files: { all: "/sail/scram/scramjet.all.js", wasm: "/sail/scram/scramjet.wasm.wasm", sync: "/sail/scram/scramjet.sync.js" }, prefix: "/sail/go/" })
+    scramjet.init()
+    const frame=document.getElementById("frame"),bar=document.getElementById("bar"),lb=document.getElementById("loading-bar"),hp=document.getElementById("homepage")
+    const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    function tick(){ const n=new Date(),hh=n.getHours().toString().padStart(2,'0'),mm=n.getMinutes().toString().padStart(2,'0'); document.getElementById('hclock').textContent=hh+':'+mm; const ds=DAYS[n.getDay()].toUpperCase()+' · '+n.getDate()+' '+MONTHS[n.getMonth()].toUpperCase(); document.getElementById('hdate').textContent=ds; document.getElementById('hdate2').textContent=DAYS[n.getDay()].toUpperCase()+' '+n.getDate()+' '+MONTHS[n.getMonth()].toUpperCase()+' '+n.getFullYear() }
+    tick(); setInterval(tick,1000)
+    function showLB(){ lb.style.opacity='1'; lb.style.width='70%'; lb.style.transition='width 1.2s ease' }
+    function hideLB(){ lb.style.width='100%'; lb.style.transition='width 0.3s ease, opacity 0.4s ease 0.3s'; setTimeout(()=>{ lb.style.opacity='0'; lb.style.width='0%'; lb.style.transition='none' },700) }
+    function navigate(raw){ let url=raw.trim(); if(!url)return; if(!url.includes('.')) url='https://search.brave.com/search?q='+encodeURIComponent(url); else if(!url.startsWith('http')) url='https://'+url; hp.classList.add('hidden'); showLB(); bar.value=raw.trim(); frame.src=scramjet.encodeUrl(url) }
+    function nav(){ navigate(bar.value) }
+    function navHomeBar(){ navigate(document.getElementById('home-bar').value) }
+    function go(url){ navigate(url) }
+    function goHome(){ hp.classList.remove('hidden'); frame.src=''; bar.value='' }
+    function switchWisp(){ const v=document.getElementById('wispSelect').value; connection.setTransport('/sail/libcurl/index.mjs',[{websocket:v}]); probe(v) }
+    frame.addEventListener('load',hideLB)
+    bar.addEventListener('keydown',e=>{ if(e.key==='Enter') nav() })
+    document.getElementById('home-bar').addEventListener('keydown',e=>{ if(e.key==='Enter') navHomeBar() })
+    let pt=null
+    function probe(url){ const d=document.getElementById('statusDot'); d.className=''; clearTimeout(pt); let ok=false,ws; try{ws=new WebSocket(url)}catch(e){setS(false);return}; const t=setTimeout(()=>{if(!ok){ok=true;setS(false);try{ws.close()}catch(_){}}},5000); ws.onopen=()=>{if(!ok){ok=true;clearTimeout(t);setS(true);try{ws.close()}catch(_){}}}; ws.onerror=()=>{if(!ok){ok=true;clearTimeout(t);setS(false)}}; ws.onclose=e=>{if(!ok){ok=true;clearTimeout(t);setS(e.code!==1006)}}; function setS(on){ d.className=on?'online':'offline'; pt=setTimeout(()=>probe(document.getElementById('wispSelect').value),30000) } }
+    probe('wss://wisp.mercurywork.shop/')
+</script>
+</body>
+</html>

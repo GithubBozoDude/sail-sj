@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sail</title>
+    <link rel="stylesheet" media="print" onload="this.media=\'all\'" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --ink:#0c0d0f; --paper:#111418; --panel:#181c21; --rim:#242930; --rim2:#2e3540; --amber:#e8a030; --amber-d:#a06818; --slate:#8a95a3; --text:#d8dde4; --dim:#4a5568; --mono:'Space Mono',monospace; }
+        html,body { height:100%; width:100%; overflow:hidden; background:var(--ink); color:var(--text); font-family:'DM Sans',sans-serif; }
+        body::before { content:''; position:fixed; inset:0; pointer-events:none; background-image:linear-gradient(rgba(232,160,48,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(232,160,48,0.03) 1px,transparent 1px); background-size:48px 48px; }
+
+        #toolbar { position:relative; z-index:10; display:flex; align-items:center; height:48px; background:var(--paper); border-bottom:1px solid var(--rim); flex-shrink:0; }
+        .brand { display:flex; align-items:center; gap:10px; padding:0 20px; height:100%; border-right:1px solid var(--rim); cursor:pointer; flex-shrink:0; transition:background 0.15s; }
+        .brand:hover { background:var(--panel); }
+        .diamond { width:22px; height:22px; border:1.5px solid var(--amber); transform:rotate(45deg); position:relative; flex-shrink:0; }
+        .diamond::after { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:6px; height:6px; background:var(--amber); }
+        .brand-name { font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--amber); }
+        #bar-sec { flex:1; display:flex; align-items:center; padding:0 16px; gap:10px; height:100%; border-right:1px solid var(--rim); }
+        .bar-pfx { font-family:var(--mono); font-size:11px; color:var(--dim); flex-shrink:0; }
+        #bar { flex:1; height:100%; background:transparent; border:none; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; caret-color:var(--amber); }
+        #bar::placeholder { color:var(--dim); }
+        #go-btn { flex-shrink:0; height:30px; padding:0 16px; background:var(--amber); border:none; color:var(--ink); font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); transition:background 0.15s; }
+        #go-btn:hover { background:#f0b040; }
+        .nav-r { display:flex; align-items:center; height:100%; flex-shrink:0; }
+        .wisp-w { display:flex; align-items:center; gap:8px; padding:0 16px; height:100%; border-right:1px solid var(--rim); }
+        .wlbl { font-family:var(--mono); font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:0.1em; }
+        #wispSelect { background:transparent; border:none; color:var(--slate); font-family:var(--mono); font-size:11px; outline:none; cursor:pointer; appearance:none; padding-right:14px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0 center; background-size:12px; }
+        #wispSelect option { background:#181c21; }
+        .stat-w { display:flex; align-items:center; gap:7px; padding:0 16px; height:100%; }
+        .slbl { font-family:var(--mono); font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:0.1em; }
+        #statusDot { width:6px; height:6px; background:var(--amber-d); transition:background 0.4s; flex-shrink:0; }
+        #statusDot.online  { background:#48bb78; box-shadow:0 0 6px rgba(72,187,120,0.5); animation:blink 2.4s ease-in-out infinite; }
+        #statusDot.offline { background:#fc8181; }
+
+        #frame-wrap { position:relative; z-index:1; width:100%; height:calc(100vh - 48px); }
+        iframe { display:block; width:100%; height:100%; border:none; }
+        #loading-bar { position:absolute; top:0; left:0; height:2px; width:0%; background:var(--amber); z-index:20; opacity:0; pointer-events:none; box-shadow:0 0 8px var(--amber); }
+
+        #homepage { position:absolute; inset:0; z-index:8; display:flex; flex-direction:column; background:var(--ink); }
+        #homepage.hidden { display:none; }
+        .hp-top { display:flex; align-items:center; justify-content:space-between; padding:12px 32px; border-bottom:1px solid var(--rim); flex-shrink:0; }
+        .coord { font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:0.08em; }
+        .htime { font-family:var(--mono); font-size:10px; color:var(--amber); letter-spacing:0.1em; }
+        .hp-main { flex:1; display:flex; overflow:hidden; }
+        .hp-left { width:400px; flex-shrink:0; border-right:1px solid var(--rim); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; }
+        .compass { width:180px; height:180px; position:relative; }
+        .cr1 { width:100%; height:100%; border:1px solid var(--rim2); border-radius:50%; position:absolute; }
+        .cr2 { width:75%; height:75%; border:1px solid var(--rim); border-radius:50%; position:absolute; top:12.5%; left:12.5%; }
+        .cr3 { width:50%; height:50%; border:1px dashed var(--rim); border-radius:50%; position:absolute; top:25%; left:25%; }
+        .cx { position:absolute; inset:0; }
+        .cx::before { content:''; position:absolute; top:0; bottom:0; left:50%; width:1px; background:linear-gradient(to bottom,transparent,var(--rim2),transparent); transform:translateX(-50%); }
+        .cx::after { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:linear-gradient(to right,transparent,var(--rim2),transparent); transform:translateY(-50%); }
+        .needle { position:absolute; top:50%; left:50%; width:2px; height:45%; transform-origin:bottom center; transform:translate(-50%,-100%); animation:spin 12s linear infinite; }
+        .needle::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:18px solid var(--amber); }
+        .needle::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:14px solid var(--rim2); }
+        .ncenter { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:8px; height:8px; background:var(--amber); }
+        .clabels { position:absolute; inset:-24px; }
+        .clabels span { position:absolute; font-family:var(--mono); font-size:10px; font-weight:700; color:var(--slate); letter-spacing:0.1em; }
+        .cn { top:0; left:50%; transform:translateX(-50%); }
+        .cs { bottom:0; left:50%; transform:translateX(-50%); }
+        .ce { top:50%; right:0; transform:translateY(-50%); }
+        .cw { top:50%; left:0; transform:translateY(-50%); }
+        .tagline { margin-top:28px; text-align:center; }
+        .tl-main { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--text); }
+        .tl-main span { color:var(--amber); }
+        .tl-sub { margin-top:4px; font-size:10px; color:var(--dim); }
+        .hp-right { flex:1; display:flex; flex-direction:column; padding:40px 40px 40px 48px; gap:32px; overflow:hidden; }
+        .slabel { font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:10px; }
+        .srow { display:flex; }
+        .spre { display:flex; align-items:center; padding:0 14px; background:var(--panel); border:1px solid var(--rim2); border-right:none; font-family:var(--mono); font-size:11px; color:var(--amber); }
+        #home-bar { flex:1; height:46px; padding:0 16px; background:var(--panel); border:1px solid var(--rim2); border-right:none; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; caret-color:var(--amber); }
+        #home-bar::placeholder { color:var(--dim); }
+        #home-go { height:46px; padding:0 24px; background:var(--amber); border:1px solid var(--amber); color:var(--ink); font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; white-space:nowrap; transition:background 0.15s; }
+        #home-go:hover { background:#f0b040; }
+        .scblock { flex:1; min-height:0; }
+        .scgrid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(2,1fr); gap:8px; height:calc(100% - 24px); }
+        .sc { display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--panel); border:1px solid var(--rim); cursor:pointer; position:relative; overflow:hidden; transition:border-color 0.15s,background 0.15s; }
+        .sc::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--amber); transform:scaleY(0); transform-origin:bottom; transition:transform 0.2s; }
+        .sc:hover { border-color:var(--rim2); background:var(--paper); }
+        .sc:hover::before { transform:scaleY(1); }
+        .sc svg { width:24px; height:24px; color:var(--dim); flex-shrink:0; transition:color 0.15s; }
+        .sc:hover svg { color:var(--amber); }
+        .scname { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--slate); letter-spacing:0.04em; transition:color 0.15s; }
+        .sc:hover .scname { color:var(--text); }
+        .scurl { font-size:9px; color:var(--dim); margin-top:1px; }
+        .hp-bot { display:flex; align-items:center; justify-content:space-between; padding:10px 32px; border-top:1px solid var(--rim); flex-shrink:0; }
+        .hp-bot span { font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:0.06em; }
+        .hp-bot b { color:var(--amber-d); font-weight:400; }
+        .theme-btn { position:fixed; bottom:16px; right:16px; padding:8px 14px; background:rgba(232,160,48,0.07); border:1px solid rgba(232,160,48,0.15); color:rgba(232,160,48,0.4); font-family:var(--mono); font-size:10px; cursor:pointer; z-index:100; transition:background 0.2s,color 0.2s; text-decoration:none; letter-spacing:0.08em; }
+        .theme-btn:hover { background:rgba(232,160,48,0.12); color:rgba(232,160,48,0.7); }
+        @keyframes spin { from{transform:translate(-50%,-100%) rotate(0deg)} to{transform:translate(-50%,-100%) rotate(360deg)} }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    </style>
+</head>
+<body>
+<div id="toolbar">
+    <div class="brand" onclick="goHome()"><div class="diamond"></div><span class="brand-name">Sail</span></div>
+    <div id="bar-sec"><span class="bar-pfx">//</span><input type="text" id="bar" placeholder="enter url or search query" autocomplete="off" spellcheck="false"><button id="go-btn" onclick="nav()">GO</button></div>
+    <div class="nav-r">
+        <div class="wisp-w"><span class="wlbl">Node</span><select id="wispSelect" onchange="switchWisp()"><option value="wss://wisp.mercurywork.shop/">Mercury</option><option value="wss://anura.pro/">Anura</option><option value="wss://wispserver.duckdns.org:3000/">Mine</option></select></div>
+        <div class="stat-w"><span class="slbl">Signal</span><div id="statusDot"></div></div>
+    </div>
+</div>
+<div id="frame-wrap">
+    <div id="loading-bar"></div>
+    <div id="homepage">
+        <div class="hp-top"><span class="coord" id="coord">LAT 00°00′N · LON 000°00′E</span><span class="htime" id="htime">--:--:--</span></div>
+        <div class="hp-main">
+            <div class="hp-left">
+                <div class="compass"><div class="cr1"></div><div class="cr2"></div><div class="cr3"></div><div class="cx"></div><div class="needle"></div><div class="ncenter"></div><div class="clabels"><span class="cn">N</span><span class="cs">S</span><span class="ce">E</span><span class="cw">W</span></div></div>
+                <div class="tagline"><div class="tl-main">Navigate <span>freely.</span></div><div class="tl-sub">Scramjet-powered · zero logs</div></div>
+            </div>
+            <div class="hp-right">
+                <div><div class="slabel">Destination</div><div class="srow"><span class="spre">https://</span><input type="text" id="home-bar" placeholder="where to?" autocomplete="off" spellcheck="false"><button id="home-go" onclick="navHomeBar()">Navigate</button></div></div>
+                <div class="scblock"><div class="slabel">Quick Nav</div><div class="scgrid">
+                    <div class="sc" onclick="go('https://www.youtube.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3V9z" fill="currentColor" stroke="none"/></svg><div><div class="scname">YouTube</div><div class="scurl">youtube.com</div></div></div>
+                    <div class="sc" onclick="go('https://www.wikipedia.org')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9h1l2 6 2-4 2 4 2-6h1"/></svg><div><div class="scname">Wikipedia</div><div class="scurl">wikipedia.org</div></div></div>
+                    <div class="sc" onclick="go('https://play.geforcenow.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v7c0 5-8 9-8 9S4 18 4 13V6z"/><path d="m13 8-4 7h4l-1 5 5-8h-4z" fill="currentColor" stroke="none"/></svg><div><div class="scname">GeForce Now</div><div class="scurl">geforcenow.com</div></div></div>
+                    <div class="sc" onclick="go('https://www.google.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg><div><div class="scname">Google</div><div class="scurl">google.com</div></div></div>
+                    <div class="sc" onclick="go('https://www.reddit.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><circle cx="8.5" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1" fill="currentColor" stroke="none"/><path d="M9 17q3 2 6 0"/></svg><div><div class="scname">Reddit</div><div class="scurl">reddit.com</div></div></div>
+                    <div class="sc" onclick="go('https://www.github.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2S18 4 16 5a13.3 13.3 0 0 0-7 0C7 4 5.9 4.6 5.9 4.6A4.2 4.2 0 0 0 5.8 8 4.6 4.6 0 0 0 4.5 11c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg><div><div class="scname">GitHub</div><div class="scurl">github.com</div></div></div>
+                    <div class="sc" onclick="go('https://discord.com/app')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7s-2-2-6-2l-1 2c-1.3-.2-2.7-.2-4 0L8 5C4 5 2 7 2 7S-.5 12 1 17c2 2 5 3 5 3l1-2c1 .4 2.3.7 3.5.7H14l1 2s3-1 5-3c1.5-5-1-10-1-10z"/><circle cx="8.5" cy="13" r="1.5" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1.5" fill="currentColor" stroke="none"/></svg><div><div class="scname">Discord</div><div class="scurl">discord.com</div></div></div>
+                    <div class="sc" onclick="go('https://www.twitch.tv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2 2 6v14h5v3h3l3-3h4l5-5V2H3z"/><line x1="9" y1="8" x2="9" y2="14"/><line x1="14" y1="8" x2="14" y2="14"/></svg><div><div class="scname">Twitch</div><div class="scurl">twitch.tv</div></div></div>
+                </div></div>
+            </div>
+        </div>
+        <div class="hp-bot"><span>SAIL · <b>SCRAMJET</b> · ZERO LOGS</span><span id="hdate">--</span></div>
+    </div>
+    <iframe src="" id="frame"></iframe>
+</div>
+<a class="theme-btn" href="index.html">⬡ Change Theme</a>
+    <script src="/sail/baremux/index.js"></script>
+    <script src="/sail/scram/scramjet.all.js"></script>
+    <script>navigator.serviceWorker.register("/sail/sw.js")</script>
+<script>
+    const connection = new BareMux.BareMuxConnection("/sail/baremux/worker.js")
+    connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: "wss://wisp.mercurywork.shop/" }])
+    const { ScramjetController } = $scramjetLoadController()
+    const scramjet = new ScramjetController({ files: { all: "/sail/scram/scramjet.all.js", wasm: "/sail/scram/scramjet.wasm.wasm", sync: "/sail/scram/scramjet.sync.js" }, prefix: "/sail/go/" })
+    scramjet.init()
+    const frame=document.getElementById("frame"),bar=document.getElementById("bar"),lb=document.getElementById("loading-bar"),hp=document.getElementById("homepage")
+    const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    function tick(){ const n=new Date(),hh=n.getHours().toString().padStart(2,'0'),mm=n.getMinutes().toString().padStart(2,'0'),ss=n.getSeconds().toString().padStart(2,'0'); document.getElementById('htime').textContent=hh+':'+mm+':'+ss; document.getElementById('hdate').textContent=DAYS[n.getDay()].toUpperCase()+' '+n.getDate()+' '+MONTHS[n.getMonth()].toUpperCase()+' '+n.getFullYear(); const lat=(33+Math.sin(Date.now()/60000)*0.5).toFixed(2),lon=(117+Math.cos(Date.now()/60000)*0.5).toFixed(2); document.getElementById('coord').textContent='LAT '+lat+'°N · LON '+lon+'°W' }
+    tick(); setInterval(tick,1000)
+    function showLB(){ lb.style.opacity='1'; lb.style.width='70%'; lb.style.transition='width 1.2s ease' }
+    function hideLB(){ lb.style.width='100%'; lb.style.transition='width 0.3s ease, opacity 0.4s ease 0.3s'; setTimeout(()=>{ lb.style.opacity='0'; lb.style.width='0%'; lb.style.transition='none' },700) }
+    function navigate(raw){ let url=raw.trim(); if(!url)return; if(!url.includes('.')) url='https://search.brave.com/search?q='+encodeURIComponent(url); else if(!url.startsWith('http')) url='https://'+url; hp.classList.add('hidden'); showLB(); bar.value=raw.trim(); frame.src=scramjet.encodeUrl(url) }
+    function nav(){ navigate(bar.value) }
+    function navHomeBar(){ navigate(document.getElementById('home-bar').value) }
+    function go(url){ navigate(url) }
+    function goHome(){ hp.classList.remove('hidden'); frame.src=''; bar.value='' }
+    function switchWisp(){ const v=document.getElementById('wispSelect').value; connection.setTransport('/sail/libcurl/index.mjs',[{websocket:v}]); probe(v) }
+    frame.addEventListener('load',hideLB)
+    bar.addEventListener('keydown',e=>{ if(e.key==='Enter') nav() })
+    document.getElementById('home-bar').addEventListener('keydown',e=>{ if(e.key==='Enter') navHomeBar() })
+    let pt=null
+    function probe(url){ const d=document.getElementById('statusDot'); d.className=''; clearTimeout(pt); let ok=false,ws; try{ws=new WebSocket(url)}catch(e){setS(false);return}; const t=setTimeout(()=>{if(!ok){ok=true;setS(false);try{ws.close()}catch(_){}}},5000); ws.onopen=()=>{if(!ok){ok=true;clearTimeout(t);setS(true);try{ws.close()}catch(_){}}}; ws.onerror=()=>{if(!ok){ok=true;clearTimeout(t);setS(false)}}; ws.onclose=e=>{if(!ok){ok=true;clearTimeout(t);setS(e.code!==1006)}}; function setS(on){ d.className=on?'online':'offline'; pt=setTimeout(()=>probe(document.getElementById('wispSelect').value),30000) } }
+    probe('wss://wisp.mercurywork.shop/')
+</script>
+</body>
+</html>
