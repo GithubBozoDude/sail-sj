@@ -120,7 +120,7 @@
     tick(); setInterval(tick,1000)
     function showLB(){ lb.style.opacity='1'; lb.style.width='70%'; lb.style.transition='width 1.2s ease' }
     function hideLB(){ lb.style.width='100%'; lb.style.transition='width 0.3s ease, opacity 0.4s ease 0.3s'; setTimeout(()=>{ lb.style.opacity='0'; lb.style.width='0%'; lb.style.transition='none' },700) }
-    function navigate(raw){ let url=raw.trim(); if(!url)return; if(!url.includes('.')) url='https://search.brave.com/search?q='+encodeURIComponent(url); else if(!url.startsWith('http')) url='https://'+url; hp.classList.add('hidden'); showLB(); bar.value=raw.trim(); frame.src=scramjet.encodeUrl(url) }
+    function navigate(raw){ let url=raw.trim(); if(!url)return; if(!url.includes('.')) url='https://duckduckgo.com/?q='+encodeURIComponent(url); else if(!url.startsWith('http')) url='https://'+url; hp.classList.add('hidden'); showLB(); bar.value=raw.trim(); frame.src=scramjet.encodeUrl(url) }
     function nav(){ navigate(bar.value) }
     function navHomeBar(){ navigate(document.getElementById('home-bar').value) }
     function go(url){ navigate(url) }
