@@ -34,7 +34,7 @@
         <select id="server" onchange="changeServer()">
             <option value="wss://wisp.mercurywork.shop/">Mercury</option>
             <option value="wss://anura.pro/">Anura</option>
-            <option value="wss://wispserver.duckdns.org:3000/">Mine</option>
+            <option value="wss://geometry1.gleeze.com/">Mine</option>
         </select>
         <div class="stat"><div class="dot" id="dot"></div><span id="stat-lbl">checking…</span></div>
         <a class="theme-link" href="index.html">⬡ themes</a>
@@ -64,7 +64,7 @@
         function nav() {
             let url = bar.value.trim()
             if (!url) return
-            if (!url.includes(".")) url = "https://search.brave.com/search?q=" + encodeURIComponent(url)
+            if (!url.includes(".")) url = "https://duckduckgo.com/search?q=" + encodeURIComponent(url)
             else if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://" + url
             frame.src = scramjet.encodeUrl(url)
         }
