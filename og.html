@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sail - Scramjet</title>
+    <script src="/sail/baremux/index.js"></script>
+    <script src="/sail/scram/scramjet.all.js"></script>
+    <script>
+        navigator.serviceWorker.register("/sail/sw.js")
+    </script>
+</head>
+<body>
+    <style>
+        body { margin: 0; font-family: sans-serif; }
+        .topbar { position:relative; z-index:10; display:flex; align-items:center; gap:8px; padding:8px; box-sizing:border-box; width:100%; background:#fff; border-bottom:1px solid #ddd; }
+        #bar { flex:1; min-width:0; padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:14px; }
+        #bar:focus { outline:none; border-color:#888; }
+        .go-btn { padding:6px 16px; background:#1a73e8; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer; }
+        .go-btn:hover { background:#1557b0; }
+        #server { flex:0 0 120px; padding:6px; border:1px solid #ccc; border-radius:4px; font-size:13px; }
+        .stat { display:flex; align-items:center; gap:5px; font-size:12px; color:#666; flex-shrink:0; }
+        .dot { width:8px; height:8px; border-radius:50%; background:#ccc; flex-shrink:0; transition:background 0.3s; }
+        .dot.online  { background:#34d399; box-shadow:0 0 4px rgba(52,211,153,0.6); }
+        .dot.offline { background:#f87171; }
+        iframe { display:block; width:100vw; background:#cfcfcf; position:absolute; left:0; bottom:0; height:calc(100vh - 44px); border:none; }
+        .theme-link { font-size:12px; color:#1a73e8; text-decoration:none; white-space:nowrap; }
+        .theme-link:hover { text-decoration:underline; }
+    </style>
+
+    <div class="topbar">
+        <input type="text" placeholder="Search or enter URL…" id="bar">
+        <button class="go-btn" onclick="nav()">Go</button>
+        <select id="server" onchange="changeServer()">
+            <option value="wss://wisp.mercurywork.shop/">Mercury</option>
+            <option value="wss://anura.pro/">Anura</option>
+            <option value="wss://wispserver.duckdns.org:3000/">Mine</option>
+        </select>
+        <div class="stat"><div class="dot" id="dot"></div><span id="stat-lbl">checking…</span></div>
+        <a class="theme-link" href="index.html">⬡ themes</a>
+    </div>
+    <iframe src="" id="frame"></iframe>
+
+    <script>
+        const connection = new BareMux.BareMuxConnection("/sail/baremux/worker.js")
+        const server = document.getElementById("server")
+        connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: server.value }])
+
+        function changeServer() {
+            connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: server.value }])
+            probe(server.value)
+        }
+
+        const frame = document.getElementById("frame")
+        const bar   = document.getElementById("bar")
+
+        const { ScramjetController } = $scramjetLoadController()
+        const scramjet = new ScramjetController({
+            files: { all: "/sail/scram/scramjet.all.js", wasm: "/sail/scram/scramjet.wasm.wasm", sync: "/sail/scram/scramjet.sync.js" },
+            prefix: "/sail/go/"
+        })
+        scramjet.init()
+
+        function nav() {
+            let url = bar.value.trim()
+            if (!url) return
+            if (!url.includes(".")) url = "https://search.brave.com/search?q=" + encodeURIComponent(url)
+            else if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://" + url
+            frame.src = scramjet.encodeUrl(url)
+        }
+
+        bar.addEventListener("keydown", e => { if (e.key === "Enter") nav() })
+
+        let pt = null
+        function probe(url) {
+            const dot = document.getElementById('dot'), lbl = document.getElementById('stat-lbl')
+            dot.className = 'dot'; lbl.textContent = 'checking…'
+            clearTimeout(pt)
+            let ok = false, ws
+            try { ws = new WebSocket(url) } catch(e) { set(false); return }
+            const t = setTimeout(() => { if (!ok) { ok=true; set(false); try{ws.close()}catch(_){} } }, 5000)
+            ws.onopen  = () => { if (!ok) { ok=true; clearTimeout(t); set(true);  try{ws.close()}catch(_){} } }
+            ws.onerror = () => { if (!ok) { ok=true; clearTimeout(t); set(false) } }
+            ws.onclose = e  => { if (!ok) { ok=true; clearTimeout(t); set(e.code!==1006) } }
+            function set(on) { dot.className='dot '+(on?'online':'offline'); lbl.textContent=on?'connected':'offline'; pt=setTimeout(()=>probe(server.value),30000) }
+        }
+        probe(server.value)
+    </script>
+</body>
+</html>
