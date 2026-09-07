@@ -1,0 +1,24 @@
+name: Deploy to Bunny.net
+
+on:
+  push:
+    branches:
+      - main  # Change this to 'master' if your repo's primary branch is named master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Bunny Storage
+        uses: ayeressian/bunnycdn-storage-deployer@v2.2.2
+        with:
+          source: '.'  
+          storageZoneName: ${{ secrets.BUNNY_STORAGE_ZONE_NAME }}
+          storagePassword: ${{ secrets.BUNNY_ACCESS_KEY }}
+          storageEndpoint: '://bunnycdn.com' # Points to your Los Angeles server
+          upload: true
+          removeConfig: false
+          purgePullZone: true 
