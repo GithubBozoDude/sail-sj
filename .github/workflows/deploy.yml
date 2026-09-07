@@ -18,9 +18,9 @@ jobs:
           source: '.'  
           storageZoneName: ${{ secrets.BUNNY_STORAGE_ZONE_NAME }}
           storagePassword: ${{ secrets.BUNNY_ACCESS_KEY }}
-          storageEndpoint: '://bunnycdn.com'
-          accessKey: ${{ secrets.BUNNY_API_KEY }} # Added for purging
-          pullZoneId: ${{ secrets.BUNNY_PULL_ZONE_ID }} # Added for purging
+          storageEndpoint: 'bunnycdn.com' # Clean global endpoint with no extra prefixes
+          accessKey: ${{ secrets.BUNNY_API_KEY }} 
+          pullZoneId: ${{ secrets.BUNNY_PULL_ZONE_ID }} 
           upload: true
           removeConfig: false
           purgePullZone: true 
