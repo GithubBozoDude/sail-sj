@@ -3,7 +3,7 @@ name: Deploy to Bunny.net
 on:
   push:
     branches:
-      - main  # Change this to 'master' if your repo's default branch is called master
+      - main
 
 jobs:
   deploy:
@@ -18,7 +18,9 @@ jobs:
           source: '.'  
           storageZoneName: ${{ secrets.BUNNY_STORAGE_ZONE_NAME }}
           storagePassword: ${{ secrets.BUNNY_ACCESS_KEY }}
-          storageEndpoint: 'la.storage.bunnycdn.com'
+          storageEndpoint: '://bunnycdn.com'
+          accessKey: ${{ secrets.BUNNY_API_KEY }} # Added for purging
+          pullZoneId: ${{ secrets.BUNNY_PULL_ZONE_ID }} # Added for purging
           upload: true
           removeConfig: false
           purgePullZone: true 
