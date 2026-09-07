@@ -18,7 +18,7 @@ jobs:
           source: '.'  
           storageZoneName: ${{ secrets.BUNNY_STORAGE_ZONE_NAME }}
           storagePassword: ${{ secrets.BUNNY_ACCESS_KEY }}
-          storageEndpoint: 'la.storage.bunnycdn.com' # Fixed this line to point to your LA server
+          storageEndpoint: 'la.storage.bunnycdn.com'
           accessKey: ${{ secrets.BUNNY_API_KEY }} 
           pullZoneId: ${{ secrets.BUNNY_PULL_ZONE_ID }} 
           upload: true
