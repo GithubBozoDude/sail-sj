@@ -37,7 +37,7 @@ async function logToDiscord(
           },
           {
             name: "Page",
-            value: path || "/",
+            value: path,
             inline: false,
           },
         ],
@@ -101,14 +101,15 @@ export async function proxy(req: NextRequest) {
   }
 
   /*
-   * Only log actual browser document navigations.
-   *
-   * This means:
-   * - refreshing a page -> notification
-   * - closing/reopening the site -> notification
-   * - navigating to another HTML page -> notification
-   *
-   * It avoids logging images, scripts, stylesheets, etc.
+   * "/" redirects to "/index.html", so don't log "/".
+   * This prevents two Discord notifications for the same visit.
+   */
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/index.html", req.url));
+  }
+
+  /*
+   * Only log browser document navigations.
    */
   const fetchDest = req.headers.get("sec-fetch-dest");
 
