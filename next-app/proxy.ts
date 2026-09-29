@@ -1,4 +1,3 @@
-```ts
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
@@ -69,13 +68,13 @@ async function logToDiscord(
   }
 }
 
-export async function middleware(
+export async function proxy(
   req: NextRequest,
   event: NextFetchEvent
 ) {
   const { pathname } = req.nextUrl;
 
-  // Allow login page and NextAuth endpoints.
+  // Allow the login page and NextAuth endpoints.
   if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
@@ -89,13 +88,13 @@ export async function middleware(
     return NextResponse.next();
   }
 
-  // Check for a valid NextAuth session.
+  // Check for a valid NextAuth JWT.
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // Not signed in -> send to login.
+  // Not signed in -> redirect to login.
   if (!token) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("from", pathname);
@@ -104,20 +103,18 @@ export async function middleware(
   }
 
   /*
-   * Log the login once for each newly issued session token.
-   *
-   * token.iat changes when a new session token is created, so signing
-   * out and signing back in will create another Discord notification.
+   * Log a newly created login session once.
+   * A sign-out/sign-in creates a new session token and therefore
+   * creates a new notification.
    */
   const loginMarker = `${token.sub ?? "unknown"}:${token.iat ?? "unknown"}`;
   const previousMarker = req.cookies.get("sail_login_logged")?.value;
 
   if (previousMarker !== loginMarker) {
     const ip = getClientIp(req);
-    const email =
-      typeof token.email === "string" ? token.email : null;
+    const email = typeof token.email === "string" ? token.email : null;
 
-    // Send the webhook without making the page wait for Discord.
+    // Send the Discord notification without making the page wait for it.
     event.waitUntil(logToDiscord(ip, email));
 
     const response = NextResponse.next();
@@ -139,4 +136,3 @@ export async function middleware(
 export const config = {
   matcher: ["/((?!api/health).*)"],
 };
-```
