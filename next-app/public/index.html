@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sail — Choose Theme</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; background: #08080f; font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        body {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 52px;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 20%, rgba(109,40,217,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(255,0,60,0.07) 0%, transparent 60%),
+                #08080f;
+        }
+
+        .title { text-align: center; }
+        .title h1 { font-size: 30px; font-weight: 300; color: #fff; letter-spacing: -0.03em; }
+        .title h1 span { font-weight: 600; }
+        .title p  { margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.25); letter-spacing: 0.04em; }
+
+        .cards { display: flex; gap: 20px; }
+
+        .card {
+            width: 260px; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 6px; overflow: hidden;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+        .card:hover { transform: translateY(-6px); }
+
+        /* ── Purple card ── */
+        .card-purple:hover { border-color: rgba(139,92,246,0.6); box-shadow: 0 16px 40px rgba(139,92,246,0.2); }
+        .prev-purple {
+            height: 170px; position: relative; overflow: hidden;
+            background: #07071f;
+            background-image: radial-gradient(ellipse 80% 60% at 20% 0%, rgba(109,40,217,0.35) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 100%, rgba(67,56,202,0.25) 0%, transparent 60%);
+        }
+        .pp-toolbar { height: 26px; background: rgba(8,7,28,0.9); border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+        .pp-logo { font-size: 9px; font-weight: 700; color: #c4b5fd; }
+        .pp-bar  { flex: 1; height: 13px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 4px; }
+        .pp-btn  { width: 26px; height: 13px; background: #8b5cf6; border-radius: 3px; }
+        .pp-body { padding: 16px 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .pp-clock { font-size: 30px; font-weight: 300; color: #c4b5fd; letter-spacing: -2px; }
+        .pp-search { width: 100%; height: 15px; background: rgba(255,255,255,0.06); border: 1px solid rgba(139,92,246,0.3); border-radius: 6px; }
+        .pp-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; width: 100%; }
+        .pp-sc { height: 28px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; }
+
+        /* ── Nautical card ── */
+        .card-naut:hover { border-color: rgba(232,160,48,0.6); box-shadow: 0 16px 40px rgba(232,160,48,0.15); }
+        .prev-naut {
+            height: 170px; overflow: hidden;
+            background: #0c0d0f;
+            background-image: linear-gradient(rgba(232,160,48,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(232,160,48,0.04) 1px, transparent 1px);
+            background-size: 18px 18px;
+        }
+        .np-toolbar { height: 26px; background: #111418; border-bottom: 1px solid #242930; display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+        .np-brand  { display: flex; align-items: center; gap: 4px; padding-right: 8px; border-right: 1px solid #242930; }
+        .np-diamond { width: 8px; height: 8px; background: #e8a030; transform: rotate(45deg); flex-shrink: 0; }
+        .np-logo   { font-size: 8px; font-weight: 700; color: #e8a030; letter-spacing: 0.1em; font-family: monospace; }
+        .np-bar    { flex: 1; }
+        .np-btn    { width: 26px; height: 13px; background: #e8a030; clip-path: polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%); }
+        .np-body   { display: flex; gap: 8px; padding: 10px; }
+        .np-left   { width: 54px; border-right: 1px solid #242930; padding-right: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .np-compass { width: 38px; height: 38px; border: 1px solid #2e3540; border-radius: 50%; position: relative; }
+        .np-compass::after { content: ''; position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-bottom: 10px solid #e8a030; }
+        .np-right  { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .np-search { height: 13px; background: #181c21; border: 1px solid #2e3540; }
+        .np-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .np-sc     { height: 22px; background: #181c21; border: 1px solid #242930; border-left: 2px solid #e8a030; }
+
+        /* ── Cyber card ── */
+        .card-cyber:hover { border-color: rgba(255,0,60,0.6); box-shadow: 0 16px 40px rgba(255,0,60,0.18); }
+        .prev-cyber {
+            height: 170px; overflow: hidden;
+            background: #030508;
+            background-image: linear-gradient(rgba(255,0,60,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,0,60,0.04) 1px, transparent 1px);
+            background-size: 22px 22px;
+        }
+        .cp-toolbar { height: 26px; background: #0a0508; border-bottom: 1px solid rgba(255,0,60,0.25); display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+        .cp-logo   { font-size: 11px; font-weight: 700; color: #ff003c; letter-spacing: 0.2em; font-family: monospace; text-shadow: 0 0 8px rgba(255,0,60,0.5); }
+        .cp-bar    { flex: 1; height: 13px; background: rgba(255,0,60,0.06); border: 1px solid rgba(255,0,60,0.2); }
+        .cp-btn    { width: 26px; height: 13px; background: #ff003c; }
+        .cp-body   { padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .cp-clock  { font-size: 26px; font-weight: 700; color: #ff003c; letter-spacing: 0.05em; font-family: monospace; text-shadow: 0 0 16px rgba(255,0,60,0.5); }
+        .cp-search { width: 100%; height: 15px; background: rgba(255,0,60,0.05); border: 1px solid rgba(255,0,60,0.3); box-shadow: 0 0 8px rgba(255,0,60,0.08); }
+        .cp-grid   { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; width: 100%; }
+        .cp-sc     { height: 24px; background: rgba(255,0,60,0.05); border: 1px solid rgba(255,0,60,0.15); }
+
+        /* card footer */
+        .card-meta { padding: 14px 16px; background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.06); }
+        .card-meta h3 { font-size: 13px; font-weight: 600; color: #fff; }
+        .card-meta p  { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+
+        .pick-btn { width: 100%; padding: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.15s; }
+        .pick-btn:hover { opacity: 0.85; }
+        .pick-purple { background: #8b5cf6; color: #fff; }
+        .pick-naut   { background: #e8a030; color: #0c0d0f; }
+        .pick-cyber  { background: #ff003c; color: #fff; }
+
+
+        /* ── OG preview ── */
+        .card-og:hover { border-color: rgba(26,115,232,0.6); box-shadow: 0 16px 40px rgba(26,115,232,0.15); }
+        .prev-og {
+            height: 170px; overflow: hidden;
+            background: #f5f5f5;
+        }
+        .op-topbar { height: 32px; background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+        .op-bar  { flex: 1; height: 14px; background: #fff; border: 1px solid #ccc; border-radius: 3px; }
+        .op-btn  { width: 26px; height: 14px; background: #1a73e8; border-radius: 3px; }
+        .op-sel  { width: 50px; height: 14px; background: #fff; border: 1px solid #ccc; border-radius: 3px; }
+        .op-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .op-txt  { font-size: 11px; color: #333; font-family: sans-serif; }
+        .op-iframe { width: 100%; height: 60px; background: #cfcfcf; border-radius: 2px; }
+        .pick-og { background: #1a73e8; color: #fff; }
+        .footer { font-size: 11px; color: rgba(255,255,255,0.12); letter-spacing: 0.06em; }
+    </style>
+</head>
+<body>
+
+<div class="title">
+    <h1>Choose your <span>theme</span></h1>
+    <p>Saved automatically — change anytime by revisiting this page</p>
+</div>
+
+<div class="cards">
+
+    <div class="card card-purple">
+        <div class="prev-purple">
+            <div class="pp-toolbar"><span class="pp-logo">▲ SAIL</span><div class="pp-bar"></div><div class="pp-btn"></div></div>
+            <div class="pp-body">
+                <div class="pp-clock">22:47</div>
+                <div class="pp-search"></div>
+                <div class="pp-grid"><div class="pp-sc"></div><div class="pp-sc"></div><div class="pp-sc"></div><div class="pp-sc"></div><div class="pp-sc"></div><div class="pp-sc"></div><div class="pp-sc"></div><div class="pp-sc"></div></div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Deep Space</h3><p>Purple gradients · frosted glass · minimal</p></div>
+        <button class="pick-btn pick-purple" onclick="go('deepspace.html')">Select</button>
+    </div>
+
+    <div class="card card-naut">
+        <div class="prev-naut">
+            <div class="np-toolbar"><div class="np-brand"><div class="np-diamond"></div><span class="np-logo">SAIL</span></div><div class="np-bar"></div><div class="np-btn"></div></div>
+            <div class="np-body">
+                <div class="np-left"><div class="np-compass"></div></div>
+                <div class="np-right">
+                    <div class="np-search"></div>
+                    <div class="np-grid"><div class="np-sc"></div><div class="np-sc"></div><div class="np-sc"></div><div class="np-sc"></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Nautical</h3><p>Amber on slate · terminal monospace · grid</p></div>
+        <button class="pick-btn pick-naut" onclick="go('nautical.html')">Select</button>
+    </div>
+
+    <div class="card card-cyber">
+        <div class="prev-cyber">
+            <div class="cp-toolbar"><span class="cp-logo">⬡ SAIL</span><div class="cp-bar"></div><div class="cp-btn"></div></div>
+            <div class="cp-body">
+                <div class="cp-clock">22:47</div>
+                <div class="cp-search"></div>
+                <div class="cp-grid"><div class="cp-sc"></div><div class="cp-sc"></div><div class="cp-sc"></div><div class="cp-sc"></div><div class="cp-sc"></div><div class="cp-sc"></div><div class="cp-sc"></div><div class="cp-sc"></div></div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Cyber</h3><p>Blood red · scanlines · brutal contrast</p></div>
+        <button class="pick-btn pick-cyber" onclick="go('cyber.html')">Select</button>
+    </div>
+
+    <div class="card card-og">
+        <div class="prev-og">
+            <div class="op-topbar"><div class="op-bar"></div><div class="op-btn"></div><div class="op-sel"></div></div>
+            <div class="op-body">
+                <div class="op-txt">Simple. Fast. No frills.</div>
+                <div class="op-iframe"></div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Original</h3><p>Bare-bones UI · fastest load · most reliable</p></div>
+        <button class="pick-btn pick-og" onclick="go('og.html')">Select</button>
+    </div>
+
+</div>
+
+<p class="footer">SAIL · SCRAMJET PROXY</p>
+
+<script>
+    function go(page) { window.location.href = page }
+</script>
+</body>
+</html>
