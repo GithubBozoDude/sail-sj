@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  "name": "sail-sj",
+  "main": ".open-next/worker.js",
+
+  "compatibility_date": "2026-09-26",
+
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "sail-sj"
+    }
+  ],
+
+  "images": {
+    "binding": "IMAGES"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}
