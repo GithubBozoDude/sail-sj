@@ -16,7 +16,19 @@ async function logToDiscord(
     return;
   }
 
-  const now = new Date().toISOString().replace("T", " ").replace("Z", " UTC");
+  // Always display the time in Arizona time.
+  // America/Phoenix stays on MST (UTC-7) year-round.
+  const now =
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Phoenix",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }).format(new Date()) + " AZ";
 
   const payload = {
     content: "",
