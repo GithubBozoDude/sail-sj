@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Sign In To Continue",
   description: "Secure access to Sail",
   icons: {
-    icon: "/icon.svg",
-  },
+  icon: "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://example.com/&size=128",
+},
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
