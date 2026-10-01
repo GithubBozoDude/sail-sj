@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from "react";
@@ -9,80 +10,66 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d20] px-5 py-10 text-[#f8fafc]">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute -left-40 bottom-0 h-96 w-96 rounded-full bg-indigo-600/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -right-40 top-0 h-96 w-96 rounded-full bg-blue-600/10 blur-[120px]" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#070b18] px-5 py-10 text-white">
 
-      {/* Login Card */}
-      <section className="relative w-full max-w-[720px] rounded-[32px] border border-indigo-400/20 bg-[#080d20]/80 px-6 py-12 text-center shadow-[0_0_80px_rgba(30,64,175,0.08)] backdrop-blur-xl sm:px-12 sm:py-16">
+      {/* Animated background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-indigo-600/15 blur-[150px]" />
+        <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[150px]" />
+        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-400/[0.06]" />
+        <div className="absolute left-1/2 top-1/2 h-[850px] w-[850px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-400/[0.04]" />
+      </div>
 
-        {/* Sail Logo */}
-        <div className="mb-5 flex justify-center">
-          <svg
-            viewBox="0 0 80 80"
-            className="h-16 w-16 text-indigo-400"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-label="Sail logo"
-            role="img"
-          >
-            <path
-              d="M40 5C54 19 65 35 65 48C65 54 59 60 50 60H40V5Z"
-              fill="currentColor"
-            />
-            <path
-              d="M36 12C34 31 24 45 8 58C23 52 34 53 40 56V12H36Z"
-              fill="currentColor"
-              opacity="0.8"
-            />
-            <path
-              d="M5 65C18 57 29 58 40 63C51 68 63 67 75 60C68 72 55 76 40 72C26 68 16 67 5 72C2 73 2 68 5 65Z"
-              fill="currentColor"
-            />
-          </svg>
+      {/* Login content */}
+      <section className="relative z-10 w-full max-w-md">
+
+        {/* Logo */}
+        <div className="mb-10 flex flex-col items-center text-center">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[26px] border border-indigo-400/20 bg-indigo-500/[0.08] shadow-[0_0_60px_rgba(99,102,241,0.15)]">
+            <svg
+              viewBox="0 0 80 80"
+              className="h-12 w-12 text-indigo-400"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M40 5C54 19 65 35 65 48C65 54 59 60 50 60H40V5Z"
+                fill="currentColor"
+              />
+              <path
+                d="M36 12C34 31 24 45 8 58C23 52 34 53 40 56V12H36Z"
+                fill="currentColor"
+                opacity=".7"
+              />
+              <path
+                d="M5 65C18 57 29 58 40 63C51 68 63 67 75 60C68 72 55 76 40 72C26 68 16 67 5 72C2 73 2 68 5 65Z"
+                fill="currentColor"
+              />
+            </svg>
+          </div>
+
+          <h1 className="text-5xl font-bold tracking-[-0.06em]">
+            Sail<span className="text-indigo-400">.</span>
+          </h1>
+
+          <p className="mt-3 text-sm tracking-wide text-slate-400">
+            A simpler way to access your workspace.
+          </p>
         </div>
 
-        {/* Heading */}
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Sail
-        </h1>
+        {/* Card */}
+        <div className="rounded-[28px] border border-white/[0.08] bg-white/[0.035] p-7 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:p-9">
 
-        <p className="mt-3 text-lg text-[#94a3c8] sm:text-xl">
-          Secure access to sail-sj-chi
-        </p>
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Welcome back
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">
+              Sign in to continue to your workspace.
+            </p>
+          </div>
 
-        {/* Sign In Badge */}
-        <div className="mx-auto mt-10 inline-flex items-center gap-3 rounded-full border border-indigo-500/40 bg-indigo-500/[0.08] px-8 py-4 text-sm font-semibold tracking-[0.12em] text-indigo-400">
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <rect x="4" y="10" width="16" height="11" rx="2" />
-            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-            <circle cx="12" cy="15.5" r="1" />
-          </svg>
-          SIGN IN REQUIRED
-        </div>
-
-        {/* Description */}
-        <p className="mx-auto mt-10 max-w-[500px] text-base leading-relaxed text-[#94a3b8] sm:text-xl">
-          Sign in with Google to continue to{" "}
-          <span className="font-medium text-[#f8fafc]">
-            sail-sj-chi
-          </span>
-          . Your access choice is saved automatically — you can change it
-          anytime by revisiting this page.
-        </p>
-
-        {/* Google Sign In Button */}
-        <div className="mt-14 flex justify-center">
+          {/* Google button */}
           <button
             type="button"
             onClick={() =>
@@ -90,11 +77,14 @@ export default function LoginPage() {
                 callbackUrl: "/index.html",
               })
             }
-            className="group flex w-full max-w-[570px] items-center justify-center gap-5 rounded-full border border-white/80 bg-[#f8faff] px-6 py-6 text-lg font-semibold text-[#10172e] shadow-[0_0_0_rgba(99,102,241,0)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-indigo-300 hover:bg-white hover:shadow-[0_12px_45px_rgba(79,70,229,0.35)] active:translate-y-0 active:scale-[0.98] sm:text-xl"
+            className="google-button group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white px-5 py-[18px] text-[15px] font-semibold text-[#151827] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-indigo-300/70 hover:bg-white hover:shadow-[0_12px_50px_rgba(99,102,241,0.35)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-4 focus-visible:ring-offset-[#101426]"
           >
-            {/* Google Logo */}
+            {/* Shimmer */}
+            <span className="pointer-events-none absolute inset-0 -translate-x-[150%] skew-x-[-20deg] bg-gradient-to-r from-transparent via-indigo-200/70 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[150%]" />
+
+            {/* Google icon */}
             <svg
-              className="h-9 w-9 shrink-0 transition-transform duration-300 group-hover:scale-110"
+              className="relative z-10 h-[22px] w-[22px] shrink-0 transition-transform duration-300 group-hover:rotate-[8deg] group-hover:scale-110"
               viewBox="0 0 48 48"
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
@@ -117,31 +107,107 @@ export default function LoginPage() {
               />
             </svg>
 
-            <span>Sign in with Google</span>
+            <span className="relative z-10">
+              Continue with Google
+            </span>
+
+            {/* Arrow */}
+            <svg
+              className="relative z-10 ml-auto h-5 w-5 text-slate-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-indigo-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14" />
+              <path d="m13 6 6 6-6 6" />
+            </svg>
           </button>
+
+          {/* Divider */}
+          <div className="my-8 flex items-center gap-4">
+            <div className="h-px flex-1 bg-white/[0.08]" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">
+              Secure authentication
+            </span>
+            <div className="h-px flex-1 bg-white/[0.08]" />
+          </div>
+
+          {/* Security */}
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+            <svg
+              className="h-4 w-4 text-emerald-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            Your connection is private and secure
+          </div>
         </div>
 
-        {/* Divider */}
-        <div className="mt-14 border-t border-indigo-300/10" />
-
-        {/* Security Footer */}
-        <div className="mt-9 flex items-center justify-center gap-3 text-sm text-[#94a3b8] sm:text-base">
-          <svg
-            className="h-6 w-6 shrink-0 text-indigo-300"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
-            <path d="m9 12 2 2 4-4" />
-          </svg>
-          <span>Your information is always secure.</span>
-        </div>
+        {/* Footer */}
+        <p className="mt-8 text-center text-xs text-slate-600">
+          Protected access · Sail
+        </p>
       </section>
+
+      {/* Button glow animation */}
+      <style jsx>{`
+        .google-button {
+          isolation: isolate;
+        }
+
+        .google-button::before {
+          content: "";
+          position: absolute;
+          inset: -2px;
+          z-index: -1;
+          border-radius: inherit;
+          background: linear-gradient(
+            110deg,
+            #6366f1,
+            #a855f7,
+            #3b82f6,
+            #6366f1
+          );
+          background-size: 300% 100%;
+          opacity: 0;
+          transition: opacity 300ms ease;
+          animation: gradient-flow 4s linear infinite;
+        }
+
+        .google-button:hover::before {
+          opacity: 1;
+        }
+
+        @keyframes gradient-flow {
+          from {
+            background-position: 0% 50%;
+          }
+          to {
+            background-position: 300% 50%;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .google-button,
+          .google-button *,
+          .google-button::before {
+            animation: none !important;
+            transition: none !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }
