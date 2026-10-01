@@ -1,14 +1,11 @@
-```tsx
-"use client";
-
-import { useEffect } from "react";
+import type { Metadata } from "next";
 import { signIn } from "next-auth/react";
 
-export default function LoginPage() {
-  useEffect(() => {
-    document.title = "Sign In To Continue";
-  }, []);
+export const metadata: Metadata = {
+  title: "Sign In To Continue",
+};
 
+export default function LoginPage() {
   return (
     <main className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d20] px-5 py-10 text-[#f8fafc]">
       {/* Background glow */}
@@ -146,4 +143,3 @@ export default function LoginPage() {
     </main>
   );
 }
-```
