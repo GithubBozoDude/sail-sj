@@ -1,3 +1,4 @@
+
 "use client";
 
 import { signIn } from "next-auth/react";
@@ -35,7 +36,7 @@ export default function LoginPage() {
             type="button"
             onClick={() =>
               signIn("google", {
-                callbackUrl: "/index.html",
+                callbackUrl: `${window.location.origin}/index.html`,
               })
             }
             className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white px-5 py-4 text-sm font-semibold text-zinc-800 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.10)] active:translate-y-0 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
