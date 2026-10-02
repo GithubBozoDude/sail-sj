@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
@@ -16,7 +15,8 @@ const ALLOWED_PAGES = [
 async function logToDiscord(
   ip: string | null,
   email: string | null,
-  path: string
+  path: string,
+  domain: string
 ): Promise<void> {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
@@ -25,7 +25,6 @@ async function logToDiscord(
     return;
   }
 
-  // Always display the time in Arizona time.
   const now =
     new Intl.DateTimeFormat("en-US", {
       timeZone: "America/Phoenix",
@@ -54,6 +53,11 @@ async function logToDiscord(
             name: "Email",
             value: email || "(none)",
             inline: true,
+          },
+          {
+            name: "Domain",
+            value: domain || "unknown",
+            inline: false,
           },
           {
             name: "Page",
@@ -87,12 +91,10 @@ async function logToDiscord(
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Login page and NextAuth endpoints are public.
   if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
-  // Don't process Next.js/static assets.
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
@@ -101,18 +103,15 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Don't process API routes.
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  // Check for an authenticated NextAuth session.
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // Not signed in -> redirect to login.
   if (!token) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("from", pathname);
@@ -120,21 +119,18 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect the root URL to index.html.
   if (pathname === "/") {
     return NextResponse.redirect(
       new URL("/index.html", req.url)
     );
   }
 
-  // Only allow these 5 HTML pages.
   if (!ALLOWED_PAGES.includes(pathname)) {
     return NextResponse.redirect(
       new URL("/index.html", req.url)
     );
   }
 
-  // Only log browser document navigations.
   const fetchDest = req.headers.get("sec-fetch-dest");
 
   if (fetchDest === "document" || !fetchDest) {
@@ -148,7 +144,14 @@ export async function proxy(req: NextRequest) {
     const email =
       typeof token.email === "string" ? token.email : null;
 
-    await logToDiscord(ip, email, pathname);
+    // Gets the domain the visitor used.
+    // Examples:
+    // sail-sj-chi.vercel.app
+    // sail-sj-og-chi.vercel.app
+    // iready-ucer.vercel.app
+    const domain = req.nextUrl.host;
+
+    await logToDiscord(ip, email, pathname, domain);
   }
 
   return NextResponse.next();
