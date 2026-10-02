@@ -1,8 +1,17 @@
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const PUBLIC_PATHS = ["/login", "/api/auth"];
+
+const ALLOWED_PAGES = [
+  "/index.html",
+  "/cyber.html",
+  "/deepspace.html",
+  "/og.html",
+  "/nautical.html",
+];
 
 async function logToDiscord(
   ip: string | null,
@@ -17,7 +26,6 @@ async function logToDiscord(
   }
 
   // Always display the time in Arizona time.
-  // America/Phoenix stays on MST (UTC-7) year-round.
   const now =
     new Intl.DateTimeFormat("en-US", {
       timeZone: "America/Phoenix",
@@ -112,17 +120,21 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  /*
-   * "/" redirects to "/index.html", so don't log "/".
-   * This prevents two Discord notifications for the same visit.
-   */
+  // Redirect the root URL to index.html.
   if (pathname === "/") {
-    return NextResponse.redirect(new URL("/index.html", req.url));
+    return NextResponse.redirect(
+      new URL("/index.html", req.url)
+    );
   }
 
-  /*
-   * Only log browser document navigations.
-   */
+  // Only allow these 5 HTML pages.
+  if (!ALLOWED_PAGES.includes(pathname)) {
+    return NextResponse.redirect(
+      new URL("/index.html", req.url)
+    );
+  }
+
+  // Only log browser document navigations.
   const fetchDest = req.headers.get("sec-fetch-dest");
 
   if (fetchDest === "document" || !fetchDest) {
@@ -133,7 +145,8 @@ export async function proxy(req: NextRequest) {
       req.headers.get("x-real-ip") ||
       null;
 
-    const email = typeof token.email === "string" ? token.email : null;
+    const email =
+      typeof token.email === "string" ? token.email : null;
 
     await logToDiscord(ip, email, pathname);
   }
