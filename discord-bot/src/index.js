@@ -10,9 +10,18 @@ export default {
     }
 
     if (url.pathname === "/start" && request.method === "POST") {
-      if (!env.START_SECRET || request.headers.get("Authorization") !== `Bearer ${env.START_SECRET}`) {
-        return new Response("Unauthorized", { status: 401 });
-      }
+  const received = request.headers.get("Authorization");
+  const expected = env.START_SECRET
+    ? `Bearer ${env.START_SECRET}`
+    : null;
+
+  return Response.json({
+    secretLoaded: Boolean(env.START_SECRET),
+    authorizationHeaderReceived: Boolean(received),
+    authorizationMatches: received === expected,
+    secretLength: env.START_SECRET?.length ?? 0
+  });
+}
 
       const id = env.DISCORD_GATEWAY.idFromName("main");
       const stub = env.DISCORD_GATEWAY.get(id);
