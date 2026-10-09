@@ -9,20 +9,16 @@ export default {
       return Response.json({ ok: true, service: "sail-discord-bot" });
     }
 
-    if (url.pathname === "/start" && request.method === "POST") {
-  const received = request.headers.get("Authorization");
-  const expected = env.START_SECRET
-    ? `Bearer ${env.START_SECRET}`
-    : null;
-
+    
+if (url.pathname === "/start" && request.method === "POST") {
   return Response.json({
     secretLoaded: Boolean(env.START_SECRET),
-    authorizationHeaderReceived: Boolean(received),
-    authorizationMatches: received === expected,
+    authorizationHeaderReceived: Boolean(
+      request.headers.get("Authorization")
+    ),
     secretLength: env.START_SECRET?.length ?? 0
   });
 }
-
       const id = env.DISCORD_GATEWAY.idFromName("main");
       const stub = env.DISCORD_GATEWAY.get(id);
       return stub.fetch("https://discord-gateway/internal/start", { method: "POST" });
