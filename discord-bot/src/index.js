@@ -1,3 +1,4 @@
+
 const DISCORD_API = "https://discord.com/api/v10";
 const GATEWAY_URL = "wss://gateway.discord.gg/?v=10&encoding=json";
 
@@ -13,22 +14,16 @@ export default {
     }
 
     if (url.pathname === "/start" && request.method === "POST") {
-      return Response.json({
-        secretLoaded: Boolean(env.START_SECRET),
-        authorizationHeaderReceived: Boolean(
-          request.headers.get("Authorization")
-        ),
-        secretLength: env.START_SECRET?.length ?? 0
-      });
+      const id = env.DISCORD_GATEWAY.idFromName("main");
+      const stub = env.DISCORD_GATEWAY.get(id);
+
+      return stub.fetch(
+        "https://discord-gateway/internal/start",
+        { method: "POST" }
+      );
     }
 
-    const id = env.DISCORD_GATEWAY.idFromName("main");
-    const stub = env.DISCORD_GATEWAY.get(id);
-
-    return stub.fetch(
-      "https://discord-gateway/internal/start",
-      { method: "POST" }
-    );
+    return new Response("Not Found", { status: 404 });
   },
 
   async scheduled(event, env, ctx) {
@@ -66,10 +61,10 @@ export class DiscordGateway {
       !this.env.SITE_URL ||
       !this.env.DEV_MESSAGE_BOT_SECRET
     ) {
-      return new Response(
-        "Missing DISCORD_BOT_TOKEN, SITE_URL, or DEV_MESSAGE_BOT_SECRET",
-        { status: 500 }
-      );
+      return Response.json({
+        ok: false,
+        error: "Missing DISCORD_BOT_TOKEN, SITE_URL, or DEV_MESSAGE_BOT_SECRET"
+      }, { status: 500 });
     }
 
     await this.connect();
@@ -141,6 +136,10 @@ export class DiscordGateway {
       case 10: {
         // Hello
         const interval = packet.d.heartbeat_interval;
+
+        if (this.heartbeatTimer) {
+          clearInterval(this.heartbeatTimer);
+        }
 
         this.heartbeatTimer = setInterval(() => {
           this.send({ op: 1, d: this.sequence });
