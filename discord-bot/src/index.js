@@ -1,4 +1,3 @@
-```js
 const DISCORD_API = "https://discord.com/api/v10";
 const DISCORD_GATEWAY = "wss://gateway.discord.gg/?v=10&encoding=json";
 
@@ -14,21 +13,22 @@ export default {
     }
 
     if (url.pathname === "/start" && request.method === "POST") {
-      if (
-        !env.START_SECRET ||
-        request.headers.get("Authorization") !==
-          `Bearer ${env.START_SECRET}`
-      ) {
-        return new Response("Unauthorized", { status: 401 });
-      }
+  const expected = "Bearer " + env.START_SECRET;
 
-      const id = env.DISCORD_GATEWAY.idFromName("main");
-      const stub = env.DISCORD_GATEWAY.get(id);
+  if (
+    !env.START_SECRET ||
+    request.headers.get("Authorization") !== expected
+  ) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
-      return stub.fetch("https://discord-gateway/internal/start", {
-        method: "POST",
-      });
-    }
+  const id = env.DISCORD_GATEWAY.idFromName("main");
+  const stub = env.DISCORD_GATEWAY.get(id);
+
+  return stub.fetch("https://discord-gateway/internal/start", {
+    method: "POST",
+  });
+}
 
     return new Response("Not found", { status: 404 });
   },
@@ -354,4 +354,3 @@ export class DiscordGateway {
     this.reconnectDelay = Math.min(this.reconnectDelay * 2, 60000);
   }
 }
-```
