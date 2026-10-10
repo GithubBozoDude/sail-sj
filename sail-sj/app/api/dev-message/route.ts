@@ -66,13 +66,27 @@ export async function POST(req: NextRequest) {
       createdAt: Date.now(),
     };
 
-    const response = await redis(`set/${encodeURIComponent(MESSAGE_KEY)}`, {
-      method: "POST",
-      body: JSON.stringify(JSON.stringify(payload)),
-    });
+const response = await redis("", {
+  method: "POST",
+  body: JSON.stringify([
+    "SET",
+    MESSAGE_KEY,
+    JSON.stringify(payload),
+  ]),
+});
 
-    if (!response.ok) return NextResponse.json({ error: "Storage failed" }, { status: 502 });
-    return NextResponse.json({ ok: true, message: payload });
+const result = await response.json();
+
+if (!response.ok || result.error || result.result !== "OK") {
+  console.error("Upstash SET failed:", result);
+  return NextResponse.json(
+    { error: "Storage failed" },
+    { status: 502 }
+  );
+}
+
+return NextResponse.json({ ok: true, message: payload });
+    
   } catch (error) {
     console.error("Dev message POST failed:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
