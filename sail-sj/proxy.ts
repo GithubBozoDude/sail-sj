@@ -96,12 +96,13 @@ export async function proxy(req: NextRequest) {
   }
 
   if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/assets")
-  ) {
-    return NextResponse.next();
-  }
+  pathname.startsWith("/_next") ||
+  pathname.startsWith("/favicon") ||
+  pathname.startsWith("/assets") ||
+  pathname.startsWith("/sail/")
+) {
+  return NextResponse.next();
+}
 
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
