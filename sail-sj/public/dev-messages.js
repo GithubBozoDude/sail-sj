@@ -1,17 +1,12 @@
+
 (() => {
-  // This file is intentionally independent of Sail's existing UI and scripts.
   const API = "/api/dev-message";
-  const SESSION_KEY = "sail-dev-message-session";
   const POLL_MS = 3000;
 
-  let sessionStarted = Number(sessionStorage.getItem(SESSION_KEY));
-  if (!sessionStarted) {
-    sessionStarted = Date.now();
-    sessionStorage.setItem(SESSION_KEY, String(sessionStarted));
-  }
-
-  let lastSeen = sessionStarted;
   let showing = false;
+  let polling = false;
+  let queue = [];
+  const knownIds = new Set();
 
   function escapeHtml(value) {
     const div = document.createElement("div");
@@ -19,8 +14,10 @@
     return div.innerHTML;
   }
 
-  function showMessage(message) {
-    if (showing) return;
+  function showNext() {
+    if (showing || !queue.length) return;
+
+    const message = queue.shift();
     showing = true;
 
     const overlay = document.createElement("div");
@@ -28,7 +25,7 @@
     overlay.innerHTML = `
       <div class="sail-dev-message-box" role="alertdialog" aria-modal="true" aria-labelledby="sail-dev-message-title">
         <div class="sail-dev-message-title" id="sail-dev-message-title">Message From Dev</div>
-        <div class="sail-dev-message-text">${escapeHtml(message)}</div>
+        <div class="sail-dev-message-text">${escapeHtml(message.message)}</div>
         <button class="sail-dev-message-ok" type="button">OK</button>
       </div>
     `;
@@ -87,34 +84,81 @@
     document.head.appendChild(style);
     document.body.appendChild(overlay);
 
-    const close = () => {
-      overlay.remove();
-      style.remove();
-      showing = false;
-    };
+    const button = overlay.querySelector(".sail-dev-message-ok");
 
-    overlay.querySelector(".sail-dev-message-ok").addEventListener("click", close);
+    button.addEventListener("click", async () => {
+      if (button.disabled) return;
+
+      button.disabled = true;
+      button.textContent = "Saving…";
+
+      try {
+        const response = await fetch(API, {
+          method: "POST",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "dismiss",
+            id: message.id,
+          }),
+        });
+
+        if (!response.ok) {
+          button.disabled = false;
+          button.textContent = "Try Again";
+          return;
+        }
+
+        overlay.remove();
+        style.remove();
+        showing = false;
+        showNext();
+      } catch (_) {
+        button.disabled = false;
+        button.textContent = "Try Again";
+      }
+    });
   }
 
   async function poll() {
+    if (polling) return;
+    polling = true;
+
     try {
-      const response = await fetch(`${API}?since=${encodeURIComponent(lastSeen)}`, {
+      const response = await fetch(API, {
         cache: "no-store",
         credentials: "same-origin",
       });
+
       if (!response.ok) return;
 
       const data = await response.json();
-      const message = data?.message;
-      if (!message || typeof message.createdAt !== "number") return;
+      if (!Array.isArray(data.messages)) return;
 
-      lastSeen = Math.max(lastSeen, message.createdAt);
-      if (message.createdAt >= sessionStarted) showMessage(String(message.message || ""));
+      for (const message of data.messages) {
+        if (
+          !message
+          || typeof message.id !== "string"
+          || typeof message.message !== "string"
+          || knownIds.has(message.id)
+        ) {
+          continue;
+        }
+
+        knownIds.add(message.id);
+        queue.push(message);
+      }
+
+      showNext();
     } catch (_) {
-      // The popup system is optional; failures must not affect the website.
+      // Announcement failures must not affect the rest of Sail.
+    } finally {
+      polling = false;
     }
   }
 
   poll();
   setInterval(poll, POLL_MS);
 })();
+
