@@ -153,16 +153,15 @@ export async function POST(req: NextRequest) {
     // Publishing is reserved for the Discord bot.
     const secret = process.env.DEV_MESSAGE_BOT_SECRET;
 
-    if (
-      !secret
-      || req.headers.get("authorization") !== `Bearer ${secret}`
-    ) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+if (body.action === "clear") {
+  const count = await redisCommand<number>("LLEN", ANNOUNCEMENTS_KEY);
+  await redisCommand("DEL", ANNOUNCEMENTS_KEY);
 
+  return NextResponse.json({
+    ok: true,
+    cleared: count,
+  });
+}
     const message =
       typeof body.message === "string" ? body.message.trim() : "";
 
