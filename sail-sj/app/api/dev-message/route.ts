@@ -50,7 +50,7 @@ async function redisCommand<T>(...command: (string | number)[]): Promise<T> {
 async function getAccount(req: NextRequest): Promise<string | null> {
   const token = await getToken({
     req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.AUTH_SECRET,
   });
 
   return typeof token?.email === "string" && token.email.trim()
