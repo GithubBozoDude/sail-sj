@@ -166,82 +166,44 @@ async function logToDiscord(
   // Basic bot detection based on the user-agent header.
   const bot = /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
 
-  // Discord inline-code formatting creates a dark box around each value.
+  // Format values as Discord inline code.
   const boxedValue = (value: unknown) => `\`${getValue(value)}\``;
 
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
-  // All fields are full-width and stacked vertically.
+  // Each label and value share one line.
   const fields = [
     {
-      name: "IP",
-      value: boxedValue(ip || "unknown"),
+      name: "Visit Information",
+      value: [
+        `**IP:** ${boxedValue(ip || "unknown")}`,
+        `**Email:** ${boxedValue(email || "(none)")}`,
+        `**Domain:** ${boxedValue(domain || "unknown")}`,
+        `**Page:** ${boxedValue(path)}`,
+      ].join("\n"),
       inline: false,
     },
     {
-      name: "Email",
-      value: boxedValue(email || "(none)"),
+      name: "Network Information",
+      value: [
+        `**Provider:** ${boxedValue(info.org)}`,
+        `**ASN:** ${boxedValue(info.asn)}`,
+        `**Country:** ${boxedValue(info.country_name)}`,
+        `**Region:** ${boxedValue(info.region)}`,
+        `**City:** ${boxedValue(info.city)}`,
+        `**Coordinates:** ${boxedValue(coordinates)}`,
+        `**Timezone:** ${boxedValue(info.timezone)}`,
+      ].join("\n"),
       inline: false,
     },
     {
-      name: "Domain",
-      value: boxedValue(domain || "unknown"),
-      inline: false,
-    },
-    {
-      name: "Page",
-      value: boxedValue(path),
-      inline: false,
-    },
-    {
-      name: "Provider",
-      value: boxedValue(info.org),
-      inline: false,
-    },
-    {
-      name: "ASN",
-      value: boxedValue(info.asn),
-      inline: false,
-    },
-    {
-      name: "Country",
-      value: boxedValue(info.country_name),
-      inline: false,
-    },
-    {
-      name: "Region",
-      value: boxedValue(info.region),
-      inline: false,
-    },
-    {
-      name: "City",
-      value: boxedValue(info.city),
-      inline: false,
-    },
-    {
-      name: "Coordinates",
-      value: boxedValue(coordinates),
-      inline: false,
-    },
-    {
-      name: "Timezone",
-      value: boxedValue(info.timezone),
-      inline: false,
-    },
-    {
-      name: "Mobile",
-      value: booleanValue(mobile),
-      inline: false,
-    },
-    {
-      name: "VPN",
-      value: booleanValue(vpn),
-      inline: false,
-    },
-    {
-      name: "Bot",
-      value: booleanValue(bot),
+      name: "Security",
+      value: [
+        `**Mobile:** ${booleanValue(mobile)}`,
+        `**VPN:** ${booleanValue(vpn)}`,
+        `**Bot:** ${booleanValue(bot)}`,
+      ].join("\n"),
       inline: false,
     },
   ];
