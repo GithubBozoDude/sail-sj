@@ -101,7 +101,7 @@ async function logToDiscord(
       console.error("Primary IP lookup failed:", error);
     }
 
-    // Always try the second lookup for VPN and mobile classifications.
+    // Secondary lookup for VPN and mobile classifications.
     try {
       const response = await fetch(
         `https://ipwho.is/${encodeURIComponent(ip)}`,
@@ -112,7 +112,7 @@ async function logToDiscord(
         const data = (await response.json()) as FallbackIPInfo;
 
         if (data.success) {
-          // Use fallback location data only when primary data is missing.
+          // Use fallback location data when primary data is missing.
           if (!info.country_name && !info.org) {
             info = {
               org: data.connection?.isp || data.connection?.org,
@@ -125,8 +125,7 @@ async function logToDiscord(
               timezone: data.timezone?.id,
             };
           } else {
-            // Fill individual missing values without overwriting
-            // valid information from the primary lookup.
+            // Fill missing values without overwriting valid primary data.
             info = {
               ...info,
               org: info.org || data.connection?.isp || data.connection?.org,
@@ -165,83 +164,85 @@ async function logToDiscord(
       : "Unknown";
 
   // Basic bot detection based on the user-agent header.
-  const bot =
-    /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
+  const bot = /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
 
-  // Discord renders inline code as a small dark box.
+  // Discord inline-code formatting creates a dark box around each value.
+  const boxedValue = (value: unknown) => `\`${getValue(value)}\``;
+
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
+  // All fields are full-width and stacked vertically.
   const fields = [
     {
       name: "IP",
-      value: ip || "unknown",
-      inline: true,
+      value: boxedValue(ip || "unknown"),
+      inline: false,
     },
     {
       name: "Email",
-      value: email || "(none)",
-      inline: true,
+      value: boxedValue(email || "(none)"),
+      inline: false,
     },
     {
       name: "Domain",
-      value: domain || "unknown",
+      value: boxedValue(domain || "unknown"),
       inline: false,
     },
     {
       name: "Page",
-      value: path,
+      value: boxedValue(path),
       inline: false,
     },
     {
       name: "Provider",
-      value: getValue(info.org),
+      value: boxedValue(info.org),
       inline: false,
     },
     {
       name: "ASN",
-      value: getValue(info.asn),
-      inline: true,
+      value: boxedValue(info.asn),
+      inline: false,
     },
     {
       name: "Country",
-      value: getValue(info.country_name),
-      inline: true,
+      value: boxedValue(info.country_name),
+      inline: false,
     },
     {
       name: "Region",
-      value: getValue(info.region),
-      inline: true,
+      value: boxedValue(info.region),
+      inline: false,
     },
     {
       name: "City",
-      value: getValue(info.city),
-      inline: true,
+      value: boxedValue(info.city),
+      inline: false,
     },
     {
       name: "Coordinates",
-      value: coordinates,
+      value: boxedValue(coordinates),
       inline: false,
     },
     {
       name: "Timezone",
-      value: getValue(info.timezone),
-      inline: true,
+      value: boxedValue(info.timezone),
+      inline: false,
     },
     {
       name: "Mobile",
       value: booleanValue(mobile),
-      inline: true,
+      inline: false,
     },
     {
       name: "VPN",
       value: booleanValue(vpn),
-      inline: true,
+      inline: false,
     },
     {
       name: "Bot",
       value: booleanValue(bot),
-      inline: true,
+      inline: false,
     },
   ];
 
