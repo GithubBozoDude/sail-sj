@@ -166,43 +166,29 @@ async function logToDiscord(
   // Basic bot detection based on the user-agent header.
   const bot = /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
 
-  // Format values as Discord inline code.
+  // Discord inline-code formatting creates a dark box around each value.
   const boxedValue = (value: unknown) => `\`${getValue(value)}\``;
 
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
-  // Each label and value share one line.
+  // All IP details appear under one heading.
+  // Block quote formatting creates a gray vertical bar.
   const fields = [
     {
-      name: "Visit Information",
+      name: "IP Info:",
       value: [
-        `**IP:** ${boxedValue(ip || "unknown")}`,
-        `**Email:** ${boxedValue(email || "(none)")}`,
-        `**Domain:** ${boxedValue(domain || "unknown")}`,
-        `**Page:** ${boxedValue(path)}`,
-      ].join("\n"),
-      inline: false,
-    },
-    {
-      name: "Network Information",
-      value: [
-        `**Provider:** ${boxedValue(info.org)}`,
-        `**ASN:** ${boxedValue(info.asn)}`,
-        `**Country:** ${boxedValue(info.country_name)}`,
-        `**Region:** ${boxedValue(info.region)}`,
-        `**City:** ${boxedValue(info.city)}`,
-        `**Coordinates:** ${boxedValue(coordinates)}`,
-        `**Timezone:** ${boxedValue(info.timezone)}`,
-      ].join("\n"),
-      inline: false,
-    },
-    {
-      name: "Security",
-      value: [
-        `**Mobile:** ${booleanValue(mobile)}`,
-        `**VPN:** ${booleanValue(vpn)}`,
-        `**Bot:** ${booleanValue(bot)}`,
+        `> **IP:** ${boxedValue(ip || "unknown")}`,
+        `> **Provider:** ${boxedValue(info.org)}`,
+        `> **ASN:** ${boxedValue(info.asn)}`,
+        `> **Country:** ${boxedValue(info.country_name)}`,
+        `> **Region:** ${boxedValue(info.region)}`,
+        `> **City:** ${boxedValue(info.city)}`,
+        `> **Coords:** ${boxedValue(coordinates)}`,
+        `> **Timezone:** ${boxedValue(info.timezone)}`,
+        `> **Mobile:** ${booleanValue(mobile)}`,
+        `> **VPN:** ${booleanValue(vpn)}`,
+        `> **Bot:** ${booleanValue(bot)}`,
       ].join("\n"),
       inline: false,
     },
@@ -213,8 +199,11 @@ async function logToDiscord(
     embeds: [
       {
         title: "Sail Visit",
-        description: `Time: ${now}`,
+        color: 0x2b2d31,
         fields,
+        footer: {
+          text: `Time: ${now}`,
+        },
       },
     ],
   };
