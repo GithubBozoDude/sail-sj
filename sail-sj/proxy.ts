@@ -1,3 +1,4 @@
+```typescript
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
@@ -86,7 +87,7 @@ function getPCInfo(userAgent: string | null) {
 
   let browser = "Unknown";
 
-  // Check specific Chromium-based browsers before Chrome.
+  // Check specific browsers before Chrome.
   const edge = ua.match(/Edg(?:A|iOS)?\/([\d.]+)/);
   const opera = ua.match(/(?:OPR|Opera)\/([\d.]+)/);
   const samsung = ua.match(/SamsungBrowser\/([\d.]+)/);
@@ -234,7 +235,7 @@ async function logToDiscord(
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
-  // Display IP Info and PC Info as separate stacked categories.
+  // Display all three categories as separate stacked sections.
   const fields = [
     {
       name: "IP Info:",
@@ -259,6 +260,11 @@ async function logToDiscord(
         `> **OS:** ${boxedValue(pcInfo.os)}`,
         `> **Browser:** ${boxedValue(pcInfo.browser)}`,
       ].join("\n"),
+      inline: false,
+    },
+    {
+      name: "User Agent:",
+      value: `> ${boxedValue(userAgent)}`,
       inline: false,
     },
   ];
@@ -367,3 +373,4 @@ export async function proxy(req: NextRequest) {
 export const config = {
   matcher: ["/((?!api/health).*)"],
 };
+```
