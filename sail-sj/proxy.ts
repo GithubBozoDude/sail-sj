@@ -52,6 +52,26 @@ function getValue(value: unknown): string {
     : "Unknown";
 }
 
+function getDeviceType(userAgent: string | null): "Mobile" | "Desktop" {
+  const ua = userAgent || "";
+
+  // Detect common mobile phones.
+  if (
+    /iPhone|iPod|Android.*Mobile|Windows Phone|Mobile|IEMobile|Opera Mini/i.test(
+      ua
+    )
+  ) {
+    return "Mobile";
+  }
+
+  // Detect tablets, including iPads and Android tablets.
+  if (/iPad|Android(?!.*Mobile)|Tablet/i.test(ua)) {
+    return "Mobile";
+  }
+
+  return "Desktop";
+}
+
 function getPCInfo(userAgent: string | null) {
   const ua = userAgent || "";
 
@@ -61,6 +81,7 @@ function getPCInfo(userAgent: string | null) {
   if (/CrOS/i.test(ua)) {
     os = "ChromeOS";
   } else if (/Windows NT 10\.0/i.test(ua)) {
+    // Windows 10 and 11 commonly share this user-agent identifier.
     os = "Windows 10/11";
   } else if (/Windows NT 6\.3/i.test(ua)) {
     os = "Windows 8.1";
@@ -139,7 +160,7 @@ async function logToDiscord(
 
   let info: IPInfo = {};
   let vpn = false;
-  let mobile = false;
+  let mobileNetwork: "TRUE" | "FALSE" | "UNKNOWN" = "UNKNOWN";
 
   if (ip) {
     // Primary lookup for location and provider information.
@@ -160,7 +181,7 @@ async function logToDiscord(
       console.error("Primary IP lookup failed:", error);
     }
 
-    // Secondary lookup for VPN and mobile classifications.
+    // Secondary lookup for VPN, mobile and provider classifications.
     try {
       const response = await fetch(
         `https://ipwho.is/${encodeURIComponent(ip)}`,
@@ -205,7 +226,7 @@ async function logToDiscord(
           }
 
           if (typeof data.security?.mobile === "boolean") {
-            mobile = data.security.mobile;
+            mobileNetwork = data.security.mobile ? "TRUE" : "FALSE";
           }
         } else {
           console.error("Fallback IP lookup:", data.message);
@@ -225,7 +246,8 @@ async function logToDiscord(
   // Basic bot detection based on the user-agent header.
   const bot = /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
 
-  // Detect OS and browser from the user-agent header.
+  // Detect device type, OS and browser from the user-agent header.
+  const device = getDeviceType(userAgent);
   const pcInfo = getPCInfo(userAgent);
 
   // Discord inline-code formatting creates a dark box around each value.
@@ -234,7 +256,7 @@ async function logToDiscord(
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
-  // General Info appears first, above IP Info.
+  // General Info appears above IP Info.
   const fields = [
     {
       name: "General Info:",
@@ -256,7 +278,7 @@ async function logToDiscord(
         `> **City:** ${boxedValue(info.city)}`,
         `> **Coords:** ${boxedValue(coordinates)}`,
         `> **Timezone:** ${boxedValue(info.timezone)}`,
-        `> **Mobile:** ${booleanValue(mobile)}`,
+        `> **Mobile Network:** ${boxedValue(mobileNetwork)}`,
         `> **VPN:** ${booleanValue(vpn)}`,
         `> **Bot:** ${booleanValue(bot)}`,
       ].join("\n"),
@@ -265,6 +287,7 @@ async function logToDiscord(
     {
       name: "PC Info:",
       value: [
+        `> **Device:** ${boxedValue(device)}`,
         `> **OS:** ${boxedValue(pcInfo.os)}`,
         `> **Browser:** ${boxedValue(pcInfo.browser)}`,
       ].join("\n"),
@@ -360,7 +383,7 @@ export async function proxy(req: NextRequest) {
       req.headers.get("x-real-ip") ||
       null;
 
-    // Email from the authenticated NextAuth session token.
+    // Email from the authenticated NextAuth token.
     const email =
       typeof token.email === "string" ? token.email : null;
 
