@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
@@ -60,7 +61,6 @@ function getPCInfo(userAgent: string | null) {
   if (/CrOS/i.test(ua)) {
     os = "ChromeOS";
   } else if (/Windows NT 10\.0/i.test(ua)) {
-    // Windows 10 and 11 commonly share this user-agent identifier.
     os = "Windows 10/11";
   } else if (/Windows NT 6\.3/i.test(ua)) {
     os = "Windows 8.1";
@@ -234,8 +234,17 @@ async function logToDiscord(
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
-  // Display all three categories as separate stacked sections.
+  // General Info appears first, above IP Info.
   const fields = [
+    {
+      name: "General Info:",
+      value: [
+        `> **Email:** ${boxedValue(email)}`,
+        `> **Domain:** ${boxedValue(domain)}`,
+        `> **Page:** ${boxedValue(path)}`,
+      ].join("\n"),
+      inline: false,
+    },
     {
       name: "IP Info:",
       value: [
@@ -351,10 +360,14 @@ export async function proxy(req: NextRequest) {
       req.headers.get("x-real-ip") ||
       null;
 
+    // Email from the authenticated NextAuth session token.
     const email =
       typeof token.email === "string" ? token.email : null;
 
+    // Hostname the visitor is accessing.
     const domain = req.nextUrl.host;
+
+    // Requested page path, e.g. /index.html.
     const userAgent = req.headers.get("user-agent");
 
     await logToDiscord(
