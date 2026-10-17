@@ -66,7 +66,6 @@ async function logToDiscord(
     return;
   }
 
-  // Arizona timestamp, preserving the existing format.
   const now =
     new Intl.DateTimeFormat("en-US", {
       timeZone: "America/Phoenix",
@@ -80,11 +79,11 @@ async function logToDiscord(
     }).format(new Date()) + " AZ";
 
   let info: IPInfo = {};
-  let vpn = "Unknown";
-  let mobile = "Unknown";
+  let vpn = false;
+  let mobile = false;
 
   if (ip) {
-    // Primary IP lookup.
+    // Primary lookup for location and provider information.
     try {
       const response = await fetch(
         `https://ipapi.co/${encodeURIComponent(ip)}/json/`,
@@ -94,7 +93,7 @@ async function logToDiscord(
       if (response.ok) {
         const data = (await response.json()) as IPInfo;
 
-        if (!data.error && (data.country_name || data.org)) {
+        if (!data.error) {
           info = data;
         }
       }
@@ -102,18 +101,19 @@ async function logToDiscord(
       console.error("Primary IP lookup failed:", error);
     }
 
-    // Fallback when the primary lookup has no useful result.
-    if (!info.country_name && !info.org) {
-      try {
-        const response = await fetch(
-          `https://ipwho.is/${encodeURIComponent(ip)}`,
-          { signal: AbortSignal.timeout(5000) }
-        );
+    // Always try the second lookup for VPN and mobile classifications.
+    try {
+      const response = await fetch(
+        `https://ipwho.is/${encodeURIComponent(ip)}`,
+        { signal: AbortSignal.timeout(5000) }
+      );
 
-        if (response.ok) {
-          const data = (await response.json()) as FallbackIPInfo;
+      if (response.ok) {
+        const data = (await response.json()) as FallbackIPInfo;
 
-          if (data.success) {
+        if (data.success) {
+          // Use fallback location data only when primary data is missing.
+          if (!info.country_name && !info.org) {
             info = {
               org: data.connection?.isp || data.connection?.org,
               asn: data.connection?.asn,
@@ -124,23 +124,37 @@ async function logToDiscord(
               longitude: data.longitude,
               timezone: data.timezone?.id,
             };
-
-            if (typeof data.security?.vpn === "boolean") {
-              vpn = data.security.vpn ? "Yes" : "No";
-            } else if (typeof data.security?.proxy === "boolean") {
-              vpn = data.security.proxy ? "Yes (proxy detected)" : "Not detected";
-            }
-
-            if (typeof data.security?.mobile === "boolean") {
-              mobile = data.security.mobile ? "Yes" : "No";
-            }
           } else {
-            console.error("Fallback IP lookup:", data.message);
+            // Fill individual missing values without overwriting
+            // valid information from the primary lookup.
+            info = {
+              ...info,
+              org: info.org || data.connection?.isp || data.connection?.org,
+              asn: info.asn ?? data.connection?.asn,
+              country_name: info.country_name || data.country,
+              region: info.region || data.region,
+              city: info.city || data.city,
+              latitude: info.latitude ?? data.latitude,
+              longitude: info.longitude ?? data.longitude,
+              timezone: info.timezone || data.timezone?.id,
+            };
           }
+
+          if (typeof data.security?.vpn === "boolean") {
+            vpn = data.security.vpn;
+          } else if (typeof data.security?.proxy === "boolean") {
+            vpn = data.security.proxy;
+          }
+
+          if (typeof data.security?.mobile === "boolean") {
+            mobile = data.security.mobile;
+          }
+        } else {
+          console.error("Fallback IP lookup:", data.message);
         }
-      } catch (error) {
-        console.error("Fallback IP lookup failed:", error);
       }
+    } catch (error) {
+      console.error("Fallback IP lookup failed:", error);
     }
   }
 
@@ -150,28 +164,13 @@ async function logToDiscord(
       ? `${info.latitude}, ${info.longitude} (Approximate)`
       : "Unknown";
 
-  // This is a basic user-agent heuristic, not definitive bot detection.
-  const isBot =
+  // Basic bot detection based on the user-agent header.
+  const bot =
     /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
 
-  const bot = isBot
-    ? "Likely (user-agent match)"
-    : "Not detected";
-
-  // Gray code-style block containing all IP details.
-  const details = [
-    `IP: ${ip || "Unknown"}`,
-    `Provider: ${getValue(info.org)}`,
-    `ASN: ${getValue(info.asn)}`,
-    `Country: ${getValue(info.country_name)}`,
-    `Region: ${getValue(info.region)}`,
-    `City: ${getValue(info.city)}`,
-    `Coordinates: ${coordinates}`,
-    `Timezone: ${getValue(info.timezone)}`,
-    `Mobile: ${mobile}`,
-    `VPN: ${vpn}`,
-    `Bot: ${bot}`,
-  ].join("\n");
+  // Discord renders inline code as a small dark box.
+  const booleanValue = (value: boolean) =>
+    value ? "`TRUE`" : "`FALSE`";
 
   const fields = [
     {
@@ -231,23 +230,18 @@ async function logToDiscord(
     },
     {
       name: "Mobile",
-      value: mobile,
+      value: booleanValue(mobile),
       inline: true,
     },
     {
       name: "VPN",
-      value: vpn,
+      value: booleanValue(vpn),
       inline: true,
     },
     {
       name: "Bot",
-      value: bot,
+      value: booleanValue(bot),
       inline: true,
-    },
-    {
-      name: "IP Information",
-      value: `\`\`\`text\n${details}\n\`\`\``,
-      inline: false,
     },
   ];
 
