@@ -13,15 +13,14 @@ const ALLOWED_PAGES = [
 type IPInfo = {
   ip?: string;
   org?: string;
-  asn?: string | number;
+  asn?: string;
   country_name?: string;
   region?: string;
   city?: string;
   latitude?: number;
   longitude?: number;
   timezone?: string;
-  mobile?: boolean;
-  vpn?: boolean;
+  country?: string;
   connection?: {
     org?: string;
     asn?: number | string;
@@ -31,6 +30,8 @@ type IPInfo = {
     proxy?: boolean;
     tor?: boolean;
   };
+  vpn?: boolean;
+  mobile?: boolean;
 };
 
 type FallbackIPInfo = {
@@ -91,30 +92,30 @@ function getPCInfo(userAgent: string): {
   } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
     os = "iOS";
   } else if (/Mac OS X/i.test(userAgent)) {
-    const macMatch = userAgent.match(/Mac OS X ([\d_]+)/i);
-
-    os = macMatch
-      ? "macOS " + macMatch[1].replace(/_/g, ".")
-      : "macOS";
+    const match = userAgent.match(/Mac OS X ([\d_]+)/i);
+    os = match ? `macOS ${match[1].replace(/_/g, ".")}` : "macOS";
   } else if (/Linux/i.test(userAgent)) {
     os = "Linux";
   }
 
-  // Browser detection
+  // Browser — check Edge and Opera before Chrome.
   let match: RegExpMatchArray | null;
 
   if ((match = userAgent.match(/Edg\/([\d.]+)/i))) {
-    browser = "Edge " + match[1];
+    browser = `Edge ${match[1]}`;
   } else if ((match = userAgent.match(/OPR\/([\d.]+)/i))) {
-    browser = "Opera " + match[1];
+    browser = `Opera ${match[1]}`;
   } else if ((match = userAgent.match(/Firefox\/([\d.]+)/i))) {
-    browser = "Firefox " + match[1];
-  } else if ((match = userAgent.match(/Chrome\/([\d.]+)/i))) {
-    browser = "Chrome " + match[1];
+    browser = `Firefox ${match[1]}`;
+  } else if (
+    (match = userAgent.match(/Chrome\/([\d.]+)/i)) &&
+    !/Chromium/i.test(userAgent)
+  ) {
+    browser = `Chrome ${match[1]}`;
   } else if ((match = userAgent.match(/Chromium\/([\d.]+)/i))) {
-    browser = "Chromium " + match[1];
+    browser = `Chromium ${match[1]}`;
   } else if ((match = userAgent.match(/Version\/([\d.]+).*Safari/i))) {
-    browser = "Safari " + match[1];
+    browser = `Safari ${match[1]}`;
   }
 
   return { os, browser };
@@ -134,30 +135,25 @@ async function logToDiscord(
     return;
   }
 
-  const now =
-    new Date().toLocaleString("en-US", {
-      timeZone: "America/Phoenix",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    }) + " AZ";
+  const now = new Date().toLocaleString("en-US", {
+    timeZone: "America/Phoenix",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }) + " AZ";
 
   let info: IPInfo = {};
   let fallback: FallbackIPInfo = {};
 
-  // Primary IP lookup
   try {
-    const response = await fetch(
-      "https://ipapi.co/" + encodeURIComponent(ip) + "/json/",
-      {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      },
-    );
+    const response = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
 
     if (response.ok) {
       info = (await response.json()) as IPInfo;
@@ -166,7 +162,7 @@ async function logToDiscord(
     console.error("ipapi.co lookup failed:", error);
   }
 
-  // Fallback lookup for missing details
+  // Use a second provider to fill in missing information.
   const needsFallback =
     !info.country_name ||
     !info.region ||
@@ -178,7 +174,7 @@ async function logToDiscord(
   if (needsFallback) {
     try {
       const response = await fetch(
-        "https://ipwho.is/" + encodeURIComponent(ip),
+        `https://ipwho.is/${encodeURIComponent(ip)}`,
         {
           headers: { Accept: "application/json" },
           cache: "no-store",
@@ -226,7 +222,7 @@ async function logToDiscord(
 
   const coordinates =
     latitude !== undefined && longitude !== undefined
-      ? String(latitude) + ", " + String(longitude)
+      ? `${latitude}, ${longitude}`
       : "Unknown";
 
   const timezone =
@@ -248,12 +244,9 @@ async function logToDiscord(
   const bot =
     /bot|crawler|spider|crawling|headless/i.test(userAgent);
 
-  const pcInfo = getPCInfo(userAgent);
-  const os = pcInfo.os;
-  const browser = pcInfo.browser;
+  const { os, browser } = getPCInfo(userAgent);
 
-  const boxedValue = (value: unknown) =>
-    "\u0060" + getValue(value) + "\u0060";
+  const boxedValue = (value: unknown) => `\`${getValue(value)}\``;
 
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
@@ -262,34 +255,34 @@ async function logToDiscord(
     {
       name: "IP Info",
       value: [
-        "> **IP:** " + boxedValue(ip || "Unknown"),
-        "> **Provider:** " + boxedValue(provider),
-        "> **ASN:** " + boxedValue(asn),
-        "> **Country:** " + boxedValue(country),
-        "> **Region:** " + boxedValue(region),
-        "> **City:** " + boxedValue(city),
-        "> **Coords:** " + boxedValue(coordinates),
-        "> **Timezone:** " + boxedValue(timezone),
-        "> **Mobile:** " + booleanValue(mobile),
-        "> **VPN:** " + booleanValue(vpn),
-        "> **Bot:** " + booleanValue(bot),
+        `> **IP:** ${boxedValue(ip || "Unknown")}`,
+        `> **Provider:** ${boxedValue(provider)}`,
+        `> **ASN:** ${boxedValue(asn)}`,
+        `> **Country:** ${boxedValue(country)}`,
+        `> **Region:** ${boxedValue(region)}`,
+        `> **City:** ${boxedValue(city)}`,
+        `> **Coords:** ${boxedValue(coordinates)}`,
+        `> **Timezone:** ${boxedValue(timezone)}`,
+        `> **Mobile:** ${booleanValue(mobile)}`,
+        `> **VPN:** ${booleanValue(vpn)}`,
+        `> **Bot:** ${booleanValue(bot)}`,
       ].join("\n"),
       inline: false,
     },
     {
       name: "PC Info",
       value: [
-        "> **OS:** " + boxedValue(os),
-        "> **Browser:** " + boxedValue(browser),
+        `> **OS:** \`${os}\``,
+        `> **Browser:** \`${browser}\``,
       ].join("\n"),
       inline: false,
     },
     {
       name: "Visit Info",
       value: [
-        "> **Email:** " + boxedValue(email),
-        "> **Page:** " + boxedValue(path),
-        "> **Domain:** " + boxedValue(domain),
+        `> **Email:** ${boxedValue(email)}`,
+        `> **Page:** ${boxedValue(path)}`,
+        `> **Domain:** ${boxedValue(domain)}`,
       ].join("\n"),
       inline: false,
     },
@@ -302,7 +295,7 @@ async function logToDiscord(
         color: 0x2b2d31,
         fields,
         footer: {
-          text: "Time: " + now,
+          text: `Time: ${now}`,
         },
       },
     ],
@@ -331,9 +324,9 @@ async function logToDiscord(
 }
 
 export async function proxy(req: NextRequest) {
-  const pathname = req.nextUrl.pathname;
+  const { pathname } = req.nextUrl;
 
-  // Skip public pages, static assets, and API routes.
+  // Skip public pages and static/API requests.
   if (
     PUBLIC_PATHS.includes(pathname) ||
     pathname.startsWith("/_next") ||
@@ -353,7 +346,6 @@ export async function proxy(req: NextRequest) {
   if (!token) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", req.url);
-
     return NextResponse.redirect(loginUrl);
   }
 
@@ -365,9 +357,8 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Only log document navigations.
+  // Avoid logging requests that are not document navigations.
   const accept = req.headers.get("accept") || "";
-
   if (!accept.includes("text/html")) {
     return NextResponse.next();
   }
@@ -381,9 +372,7 @@ export async function proxy(req: NextRequest) {
     "Unknown";
 
   const email =
-    typeof token.email === "string"
-      ? token.email
-      : "Unknown";
+    typeof token.email === "string" ? token.email : "Unknown";
 
   const domain = req.nextUrl.hostname;
   const userAgent = req.headers.get("user-agent") || "Unknown";
@@ -401,6 +390,12 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except:
+     * - api routes
+     * - Next.js static/image optimization
+     * - favicon
+     */
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
