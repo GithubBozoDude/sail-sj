@@ -15,7 +15,7 @@ const ALLOWED_PAGES = [
 
 type IPInfo = {
   org?: string;
-  asn?: string;
+  asn?: string | number;
   country_name?: string;
   region?: string;
   city?: string;
@@ -23,6 +23,27 @@ type IPInfo = {
   longitude?: number;
   timezone?: string;
   error?: boolean;
+};
+
+type FallbackIPInfo = {
+  success?: boolean;
+  message?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+  timezone?: { id?: string };
+  connection?: {
+    asn?: number;
+    org?: string;
+    isp?: string;
+  };
+  security?: {
+    vpn?: boolean;
+    proxy?: boolean;
+    mobile?: boolean;
+  };
 };
 
 function getValue(value: unknown): string {
@@ -45,7 +66,7 @@ async function logToDiscord(
     return;
   }
 
-  // Preserve the existing Arizona timestamp.
+  // Arizona timestamp, preserving the existing format.
   const now =
     new Intl.DateTimeFormat("en-US", {
       timeZone: "America/Phoenix",
@@ -58,10 +79,12 @@ async function logToDiscord(
       hour12: true,
     }).format(new Date()) + " AZ";
 
-  let geo: IPInfo = {};
+  let info: IPInfo = {};
+  let vpn = "Unknown";
+  let mobile = "Unknown";
 
-  // Retrieve approximate public-IP information.
-  if (ip && ip !== "unknown") {
+  if (ip) {
+    // Primary IP lookup.
     try {
       const response = await fetch(
         `https://ipapi.co/${encodeURIComponent(ip)}/json/`,
@@ -69,26 +92,86 @@ async function logToDiscord(
       );
 
       if (response.ok) {
-        const result = (await response.json()) as IPInfo;
+        const data = (await response.json()) as IPInfo;
 
-        if (!result.error) {
-          geo = result;
+        if (!data.error && (data.country_name || data.org)) {
+          info = data;
         }
       }
     } catch (error) {
-      console.error("IP lookup failed:", error);
+      console.error("Primary IP lookup failed:", error);
+    }
+
+    // Fallback when the primary lookup has no useful result.
+    if (!info.country_name && !info.org) {
+      try {
+        const response = await fetch(
+          `https://ipwho.is/${encodeURIComponent(ip)}`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+
+        if (response.ok) {
+          const data = (await response.json()) as FallbackIPInfo;
+
+          if (data.success) {
+            info = {
+              org: data.connection?.isp || data.connection?.org,
+              asn: data.connection?.asn,
+              country_name: data.country,
+              region: data.region,
+              city: data.city,
+              latitude: data.latitude,
+              longitude: data.longitude,
+              timezone: data.timezone?.id,
+            };
+
+            if (typeof data.security?.vpn === "boolean") {
+              vpn = data.security.vpn ? "Yes" : "No";
+            } else if (typeof data.security?.proxy === "boolean") {
+              vpn = data.security.proxy ? "Yes (proxy detected)" : "Not detected";
+            }
+
+            if (typeof data.security?.mobile === "boolean") {
+              mobile = data.security.mobile ? "Yes" : "No";
+            }
+          } else {
+            console.error("Fallback IP lookup:", data.message);
+          }
+        }
+      } catch (error) {
+        console.error("Fallback IP lookup failed:", error);
+      }
     }
   }
 
   const coordinates =
-    typeof geo.latitude === "number" &&
-    typeof geo.longitude === "number"
-      ? `${geo.latitude}, ${geo.longitude} (Approximate)`
+    typeof info.latitude === "number" &&
+    typeof info.longitude === "number"
+      ? `${info.latitude}, ${info.longitude} (Approximate)`
       : "Unknown";
 
-  // A basic user-agent heuristic, not definitive bot detection.
+  // This is a basic user-agent heuristic, not definitive bot detection.
   const isBot =
     /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
+
+  const bot = isBot
+    ? "Likely (user-agent match)"
+    : "Not detected";
+
+  // Gray code-style block containing all IP details.
+  const details = [
+    `IP: ${ip || "Unknown"}`,
+    `Provider: ${getValue(info.org)}`,
+    `ASN: ${getValue(info.asn)}`,
+    `Country: ${getValue(info.country_name)}`,
+    `Region: ${getValue(info.region)}`,
+    `City: ${getValue(info.city)}`,
+    `Coordinates: ${coordinates}`,
+    `Timezone: ${getValue(info.timezone)}`,
+    `Mobile: ${mobile}`,
+    `VPN: ${vpn}`,
+    `Bot: ${bot}`,
+  ].join("\n");
 
   const fields = [
     {
@@ -113,27 +196,27 @@ async function logToDiscord(
     },
     {
       name: "Provider",
-      value: getValue(geo.org),
+      value: getValue(info.org),
       inline: false,
     },
     {
       name: "ASN",
-      value: getValue(geo.asn),
+      value: getValue(info.asn),
       inline: true,
     },
     {
       name: "Country",
-      value: getValue(geo.country_name),
+      value: getValue(info.country_name),
       inline: true,
     },
     {
       name: "Region",
-      value: getValue(geo.region),
+      value: getValue(info.region),
       inline: true,
     },
     {
       name: "City",
-      value: getValue(geo.city),
+      value: getValue(info.city),
       inline: true,
     },
     {
@@ -143,23 +226,28 @@ async function logToDiscord(
     },
     {
       name: "Timezone",
-      value: getValue(geo.timezone),
+      value: getValue(info.timezone),
       inline: true,
     },
     {
       name: "Mobile",
-      value: "Unknown (not provided by lookup)",
+      value: mobile,
       inline: true,
     },
     {
       name: "VPN",
-      value: "Unknown (not provided by lookup)",
+      value: vpn,
       inline: true,
     },
     {
       name: "Bot",
-      value: isBot ? "Likely (user-agent match)" : "Not detected",
+      value: bot,
       inline: true,
+    },
+    {
+      name: "IP Information",
+      value: `\`\`\`text\n${details}\n\`\`\``,
+      inline: false,
     },
   ];
 
