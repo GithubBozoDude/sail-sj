@@ -1,133 +1,123 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const PUBLIC_PATHS = ["/login", "/register"];
+const PUBLIC_PATHS = ["/login", "/api/auth", "/dev-messages.js"];
 
 const ALLOWED_PAGES = [
-  "/",
-  "/index",
-  "/dashboard",
-  "/profile",
+  "/index.html",
+  "/cyber.html",
+  "/deepspace.html",
+  "/og.html",
+  "/nautical.html",
 ];
 
 type IPInfo = {
-  ip?: string;
   org?: string;
-  asn?: string;
+  asn?: string | number;
   country_name?: string;
   region?: string;
   city?: string;
   latitude?: number;
   longitude?: number;
   timezone?: string;
-  country?: string;
-  connection?: {
-    org?: string;
-    asn?: number | string;
-  };
-  security?: {
-    vpn?: boolean;
-    proxy?: boolean;
-    tor?: boolean;
-  };
-  vpn?: boolean;
-  mobile?: boolean;
+  error?: boolean;
 };
 
 type FallbackIPInfo = {
   success?: boolean;
-  ip?: string;
+  message?: string;
   country?: string;
   region?: string;
   city?: string;
   latitude?: number;
   longitude?: number;
-  timezone?: {
-    id?: string;
-  };
+  timezone?: { id?: string };
   connection?: {
-    isp?: string;
+    asn?: number;
     org?: string;
-    asn?: number | string;
+    isp?: string;
   };
   security?: {
     vpn?: boolean;
     proxy?: boolean;
-    tor?: boolean;
+    mobile?: boolean;
   };
 };
 
 function getValue(value: unknown): string {
-  if (value === undefined || value === null || value === "") {
-    return "Unknown";
-  }
-
-  return String(value);
+  return value !== undefined && value !== null && value !== ""
+    ? String(value)
+    : "Unknown";
 }
 
-function getPCInfo(userAgent: string): {
-  os: string;
-  browser: string;
-} {
-  let os = "Unknown";
-  let browser = "Unknown";
+function getPCInfo(userAgent: string | null) {
+  const ua = userAgent || "";
 
-  // Operating system
-  if (/Windows NT 10\.0/i.test(userAgent)) {
+  let os = "Unknown";
+
+  // Check ChromeOS before Linux because ChromeOS user agents contain Linux.
+  if (/CrOS/i.test(ua)) {
+    os = "ChromeOS";
+  } else if (/Windows NT 10\.0/i.test(ua)) {
+    // Windows 10 and 11 commonly share this user-agent identifier.
     os = "Windows 10/11";
-  } else if (/Windows NT 6\.3/i.test(userAgent)) {
+  } else if (/Windows NT 6\.3/i.test(ua)) {
     os = "Windows 8.1";
-  } else if (/Windows NT 6\.2/i.test(userAgent)) {
+  } else if (/Windows NT 6\.2/i.test(ua)) {
     os = "Windows 8";
-  } else if (/Windows NT 6\.1/i.test(userAgent)) {
+  } else if (/Windows NT 6\.1/i.test(ua)) {
     os = "Windows 7";
-  } else if (/Windows NT 6\.0/i.test(userAgent)) {
+  } else if (/Windows NT 6\.0/i.test(ua)) {
     os = "Windows Vista";
-  } else if (/Windows NT 5\.1|Windows XP/i.test(userAgent)) {
+  } else if (/Windows NT 5\.1/i.test(ua)) {
     os = "Windows XP";
-  } else if (/Windows/i.test(userAgent)) {
+  } else if (/Windows/i.test(ua)) {
     os = "Windows";
-  } else if (/Android/i.test(userAgent)) {
-    os = "Android";
-  } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
+  } else if (/iPhone|iPad|iPod/i.test(ua)) {
     os = "iOS";
-  } else if (/Mac OS X/i.test(userAgent)) {
-    const match = userAgent.match(/Mac OS X ([\d_]+)/i);
-    os = match ? `macOS ${match[1].replace(/_/g, ".")}` : "macOS";
-  } else if (/Linux/i.test(userAgent)) {
+  } else if (/Android/i.test(ua)) {
+    os = "Android";
+  } else if (/Mac OS X|Macintosh/i.test(ua)) {
+    os = "macOS";
+  } else if (/Linux/i.test(ua)) {
     os = "Linux";
   }
 
-  // Browser — check Edge and Opera before Chrome.
-  let match: RegExpMatchArray | null;
+  let browser = "Unknown";
 
-  if ((match = userAgent.match(/Edg\/([\d.]+)/i))) {
-    browser = `Edge ${match[1]}`;
-  } else if ((match = userAgent.match(/OPR\/([\d.]+)/i))) {
-    browser = `Opera ${match[1]}`;
-  } else if ((match = userAgent.match(/Firefox\/([\d.]+)/i))) {
-    browser = `Firefox ${match[1]}`;
-  } else if (
-    (match = userAgent.match(/Chrome\/([\d.]+)/i)) &&
-    !/Chromium/i.test(userAgent)
-  ) {
-    browser = `Chrome ${match[1]}`;
-  } else if ((match = userAgent.match(/Chromium\/([\d.]+)/i))) {
-    browser = `Chromium ${match[1]}`;
-  } else if ((match = userAgent.match(/Version\/([\d.]+).*Safari/i))) {
-    browser = `Safari ${match[1]}`;
+  // Check specific Chromium-based browsers before Chrome.
+  const edge = ua.match(/Edg(?:A|iOS)?\/([\d.]+)/);
+  const opera = ua.match(/(?:OPR|Opera)\/([\d.]+)/);
+  const samsung = ua.match(/SamsungBrowser\/([\d.]+)/);
+  const firefox = ua.match(/(?:Firefox|FxiOS)\/([\d.]+)/);
+  const chrome = ua.match(/(?:Chrome|CriOS)\/([\d.]+)/);
+  const safari = ua.match(/Version\/([\d.]+).*Safari/);
+
+  if (edge) {
+    browser = `Edge ${edge[1]}`;
+  } else if (opera) {
+    browser = `Opera ${opera[1]}`;
+  } else if (samsung) {
+    browser = `Samsung Browser ${samsung[1]}`;
+  } else if (firefox) {
+    browser = `Firefox ${firefox[1]}`;
+  } else if (chrome) {
+    browser = `Chrome ${chrome[1]}`;
+  } else if (safari) {
+    browser = `Safari ${safari[1]}`;
   }
 
   return { os, browser };
 }
 
 async function logToDiscord(
-  ip: string,
-  email: string,
+  ip: string | null,
+  email: string | null,
   path: string,
   domain: string,
-  userAgent: string,
-) {
+  userAgent: string | null
+): Promise<void> {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
   if (!webhookUrl) {
@@ -135,134 +125,128 @@ async function logToDiscord(
     return;
   }
 
-  const now = new Date().toLocaleString("en-US", {
-    timeZone: "America/Phoenix",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  }) + " AZ";
+  const now =
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Phoenix",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }).format(new Date()) + " AZ";
 
   let info: IPInfo = {};
-  let fallback: FallbackIPInfo = {};
+  let vpn = false;
+  let mobile = false;
 
-  try {
-    const response = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-
-    if (response.ok) {
-      info = (await response.json()) as IPInfo;
-    }
-  } catch (error) {
-    console.error("ipapi.co lookup failed:", error);
-  }
-
-  // Use a second provider to fill in missing information.
-  const needsFallback =
-    !info.country_name ||
-    !info.region ||
-    !info.city ||
-    !info.org ||
-    info.latitude === undefined ||
-    info.longitude === undefined;
-
-  if (needsFallback) {
+  if (ip) {
+    // Primary lookup for location and provider information.
     try {
       const response = await fetch(
-        `https://ipwho.is/${encodeURIComponent(ip)}`,
-        {
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        },
+        `https://ipapi.co/${encodeURIComponent(ip)}/json/`,
+        { signal: AbortSignal.timeout(4000) }
       );
 
       if (response.ok) {
-        fallback = (await response.json()) as FallbackIPInfo;
+        const data = (await response.json()) as IPInfo;
+
+        if (!data.error) {
+          info = data;
+        }
       }
     } catch (error) {
-      console.error("ipwho.is lookup failed:", error);
+      console.error("Primary IP lookup failed:", error);
+    }
+
+    // Secondary lookup for VPN and mobile classifications.
+    try {
+      const response = await fetch(
+        `https://ipwho.is/${encodeURIComponent(ip)}`,
+        { signal: AbortSignal.timeout(5000) }
+      );
+
+      if (response.ok) {
+        const data = (await response.json()) as FallbackIPInfo;
+
+        if (data.success) {
+          // Use fallback location data when primary data is missing.
+          if (!info.country_name && !info.org) {
+            info = {
+              org: data.connection?.isp || data.connection?.org,
+              asn: data.connection?.asn,
+              country_name: data.country,
+              region: data.region,
+              city: data.city,
+              latitude: data.latitude,
+              longitude: data.longitude,
+              timezone: data.timezone?.id,
+            };
+          } else {
+            // Fill missing values without overwriting valid primary data.
+            info = {
+              ...info,
+              org: info.org || data.connection?.isp || data.connection?.org,
+              asn: info.asn ?? data.connection?.asn,
+              country_name: info.country_name || data.country,
+              region: info.region || data.region,
+              city: info.city || data.city,
+              latitude: info.latitude ?? data.latitude,
+              longitude: info.longitude ?? data.longitude,
+              timezone: info.timezone || data.timezone?.id,
+            };
+          }
+
+          if (typeof data.security?.vpn === "boolean") {
+            vpn = data.security.vpn;
+          } else if (typeof data.security?.proxy === "boolean") {
+            vpn = data.security.proxy;
+          }
+
+          if (typeof data.security?.mobile === "boolean") {
+            mobile = data.security.mobile;
+          }
+        } else {
+          console.error("Fallback IP lookup:", data.message);
+        }
+      }
+    } catch (error) {
+      console.error("Fallback IP lookup failed:", error);
     }
   }
 
-  const provider =
-    info.org ||
-    info.connection?.org ||
-    fallback.connection?.org ||
-    fallback.connection?.isp;
-
-  const asn =
-    info.asn ||
-    info.connection?.asn ||
-    fallback.connection?.asn;
-
-  const country =
-    info.country_name ||
-    fallback.country;
-
-  const region =
-    info.region ||
-    fallback.region;
-
-  const city =
-    info.city ||
-    fallback.city;
-
-  const latitude =
-    info.latitude ??
-    fallback.latitude;
-
-  const longitude =
-    info.longitude ??
-    fallback.longitude;
-
   const coordinates =
-    latitude !== undefined && longitude !== undefined
-      ? `${latitude}, ${longitude}`
+    typeof info.latitude === "number" &&
+    typeof info.longitude === "number"
+      ? `${info.latitude}, ${info.longitude} (Approximate)`
       : "Unknown";
 
-  const timezone =
-    info.timezone ||
-    fallback.timezone?.id;
+  // Basic bot detection based on the user-agent header.
+  const bot = /bot|crawler|spider|slurp|headless/i.test(userAgent || "");
 
-  const vpn = Boolean(
-    info.vpn ||
-      info.security?.vpn ||
-      info.security?.proxy ||
-      info.security?.tor ||
-      fallback.security?.vpn ||
-      fallback.security?.proxy ||
-      fallback.security?.tor,
-  );
+  // Detect OS and browser from the user-agent header.
+  const pcInfo = getPCInfo(userAgent);
 
-  const mobile = Boolean(info.mobile);
-
-  const bot =
-    /bot|crawler|spider|crawling|headless/i.test(userAgent);
-
-  const { os, browser } = getPCInfo(userAgent);
-
+  // Discord inline-code formatting creates a dark box around each value.
   const boxedValue = (value: unknown) => `\`${getValue(value)}\``;
 
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
+  // Display IP Info and PC Info as separate stacked categories.
   const fields = [
     {
-      name: "IP Info",
+      name: "IP Info:",
       value: [
-        `> **IP:** ${boxedValue(ip || "Unknown")}`,
-        `> **Provider:** ${boxedValue(provider)}`,
-        `> **ASN:** ${boxedValue(asn)}`,
-        `> **Country:** ${boxedValue(country)}`,
-        `> **Region:** ${boxedValue(region)}`,
-        `> **City:** ${boxedValue(city)}`,
+        `> **IP:** ${boxedValue(ip || "unknown")}`,
+        `> **Provider:** ${boxedValue(info.org)}`,
+        `> **ASN:** ${boxedValue(info.asn)}`,
+        `> **Country:** ${boxedValue(info.country_name)}`,
+        `> **Region:** ${boxedValue(info.region)}`,
+        `> **City:** ${boxedValue(info.city)}`,
         `> **Coords:** ${boxedValue(coordinates)}`,
-        `> **Timezone:** ${boxedValue(timezone)}`,
+        `> **Timezone:** ${boxedValue(info.timezone)}`,
         `> **Mobile:** ${booleanValue(mobile)}`,
         `> **VPN:** ${booleanValue(vpn)}`,
         `> **Bot:** ${booleanValue(bot)}`,
@@ -270,25 +254,17 @@ async function logToDiscord(
       inline: false,
     },
     {
-      name: "PC Info",
+      name: "PC Info:",
       value: [
-        `> **OS:** \`${os}\``,
-        `> **Browser:** \`${browser}\``,
-      ].join("\n"),
-      inline: false,
-    },
-    {
-      name: "Visit Info",
-      value: [
-        `> **Email:** ${boxedValue(email)}`,
-        `> **Page:** ${boxedValue(path)}`,
-        `> **Domain:** ${boxedValue(domain)}`,
+        `> **OS:** ${boxedValue(pcInfo.os)}`,
+        `> **Browser:** ${boxedValue(pcInfo.browser)}`,
       ].join("\n"),
       inline: false,
     },
   ];
 
   const payload = {
+    content: "",
     embeds: [
       {
         title: "Sail Visit",
@@ -308,33 +284,35 @@ async function logToDiscord(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-      cache: "no-store",
     });
 
     if (!response.ok) {
       console.error(
-        "Discord webhook failed:",
-        response.status,
-        await response.text(),
+        `Discord webhook failed: ${response.status} ${response.statusText}`
       );
     }
   } catch (error) {
-    console.error("Failed to send Discord webhook:", error);
+    console.error("Discord webhook error:", error);
   }
 }
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Skip public pages and static/API requests.
+  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
+    return NextResponse.next();
+  }
+
   if (
-    PUBLIC_PATHS.includes(pathname) ||
     pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico" ||
-    pathname.startsWith("/assets/") ||
-    pathname.startsWith("/sail/") ||
-    pathname.startsWith("/api/")
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/assets") ||
+    pathname.startsWith("/sail/")
   ) {
+    return NextResponse.next();
+  }
+
+  if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
@@ -345,57 +323,47 @@ export async function proxy(req: NextRequest) {
 
   if (!token) {
     const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("callbackUrl", req.url);
+    loginUrl.searchParams.set("from", pathname);
+
     return NextResponse.redirect(loginUrl);
   }
 
   if (pathname === "/") {
-    return NextResponse.redirect(new URL("/index", req.url));
+    return NextResponse.redirect(new URL("/index.html", req.url));
   }
 
   if (!ALLOWED_PAGES.includes(pathname)) {
-    return NextResponse.next();
+    return NextResponse.redirect(new URL("/index.html", req.url));
   }
 
-  // Avoid logging requests that are not document navigations.
-  const accept = req.headers.get("accept") || "";
-  if (!accept.includes("text/html")) {
-    return NextResponse.next();
+  const fetchDest = req.headers.get("sec-fetch-dest");
+
+  if (fetchDest === "document" || !fetchDest) {
+    const forwardedFor = req.headers.get("x-forwarded-for");
+
+    const ip =
+      forwardedFor?.split(",")[0].trim() ||
+      req.headers.get("x-real-ip") ||
+      null;
+
+    const email =
+      typeof token.email === "string" ? token.email : null;
+
+    const domain = req.nextUrl.host;
+    const userAgent = req.headers.get("user-agent");
+
+    await logToDiscord(
+      ip,
+      email,
+      pathname,
+      domain,
+      userAgent
+    );
   }
-
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  const realIp = req.headers.get("x-real-ip");
-
-  const ip =
-    forwardedFor?.split(",")[0]?.trim() ||
-    realIp ||
-    "Unknown";
-
-  const email =
-    typeof token.email === "string" ? token.email : "Unknown";
-
-  const domain = req.nextUrl.hostname;
-  const userAgent = req.headers.get("user-agent") || "Unknown";
-
-  await logToDiscord(
-    ip,
-    email,
-    pathname,
-    domain,
-    userAgent,
-  );
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - api routes
-     * - Next.js static/image optimization
-     * - favicon
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api/health).*)"],
 };
