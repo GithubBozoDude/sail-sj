@@ -172,8 +172,8 @@ async function logToDiscord(
   const booleanValue = (value: boolean) =>
     value ? "`TRUE`" : "`FALSE`";
 
-  // All IP details appear under one heading.
-  // Block quote formatting creates a gray vertical bar.
+  // All details appear beneath one heading, stacked vertically.
+  // Bold labels provide stronger contrast in Discord.
   const fields = [
     {
       name: "IP Info:",
