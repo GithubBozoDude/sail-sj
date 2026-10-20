@@ -11,6 +11,8 @@ const ALLOWED_PAGES = [
   "/deepspace.html",
   "/og.html",
   "/nautical.html",
+  "/privacy.md",
+  "/terms.md",
 ];
 
 type IPInfo = {
