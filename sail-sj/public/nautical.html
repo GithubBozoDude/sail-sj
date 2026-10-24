@@ -3,166 +3,1658 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stuff</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" media="print" onload="this.media=\'all\'" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap">
+    <title>Sail</title>
+
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+    >
 
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --ink:#0c0d0f; --paper:#111418; --panel:#181c21; --rim:#242930; --rim2:#2e3540; --amber:#e8a030; --amber-d:#a06818; --slate:#8a95a3; --text:#d8dde4; --dim:#4a5568; --mono:'Space Mono',monospace; }
-        html,body { height:100%; width:100%; overflow:hidden; background:var(--ink); color:var(--text); font-family:'DM Sans',sans-serif; }
-        body::before { content:''; position:fixed; inset:0; pointer-events:none; background-image:linear-gradient(rgba(232,160,48,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(232,160,48,0.03) 1px,transparent 1px); background-size:48px 48px; }
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        #toolbar { position:relative; z-index:10; display:flex; align-items:center; height:48px; background:var(--paper); border-bottom:1px solid var(--rim); flex-shrink:0; }
-        .brand { display:flex; align-items:center; gap:10px; padding:0 20px; height:100%; border-right:1px solid var(--rim); cursor:pointer; flex-shrink:0; transition:background 0.15s; }
-        .brand:hover { background:var(--panel); }
-        .diamond { width:22px; height:22px; border:1.5px solid var(--amber); transform:rotate(45deg); position:relative; flex-shrink:0; }
-        .diamond::after { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:6px; height:6px; background:var(--amber); }
-        .brand-name { font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--amber); }
-        #bar-sec { flex:1; display:flex; align-items:center; padding:0 16px; gap:10px; height:100%; border-right:1px solid var(--rim); }
-        .bar-pfx { font-family:var(--mono); font-size:11px; color:var(--dim); flex-shrink:0; }
-        #bar { flex:1; height:100%; background:transparent; border:none; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; caret-color:var(--amber); }
-        #bar::placeholder { color:var(--dim); }
-        #go-btn { flex-shrink:0; height:30px; padding:0 16px; background:var(--amber); border:none; color:var(--ink); font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); transition:background 0.15s; }
-        #go-btn:hover { background:#f0b040; }
-        .nav-r { display:flex; align-items:center; height:100%; flex-shrink:0; }
-        .wisp-w { display:flex; align-items:center; gap:8px; padding:0 16px; height:100%; border-right:1px solid var(--rim); }
-        .wlbl { font-family:var(--mono); font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:0.1em; }
-        #wispSelect { background:transparent; border:none; color:var(--slate); font-family:var(--mono); font-size:11px; outline:none; cursor:pointer; appearance:none; padding-right:14px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0 center; background-size:12px; }
-        #wispSelect option { background:#181c21; }
-        .stat-w { display:flex; align-items:center; gap:7px; padding:0 16px; height:100%; }
-        .slbl { font-family:var(--mono); font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:0.1em; }
-        #statusDot { width:6px; height:6px; background:var(--amber-d); transition:background 0.4s; flex-shrink:0; }
-        #statusDot.online  { background:#48bb78; box-shadow:0 0 6px rgba(72,187,120,0.5); animation:blink 2.4s ease-in-out infinite; }
-        #statusDot.offline { background:#fc8181; }
+        :root {
+            --black: #020304;
+            --bg: #050608;
+            --panel: #080a0d;
+            --panel2: #0b0d10;
 
-        #frame-wrap { position:relative; z-index:1; width:100%; height:calc(100vh - 48px); }
-        iframe { display:block; width:100%; height:100%; border:none; }
-        #loading-bar { position:absolute; top:0; left:0; height:2px; width:0%; background:var(--amber); z-index:20; opacity:0; pointer-events:none; box-shadow:0 0 8px var(--amber); }
+            --line: #15181d;
+            --line2: #1d2128;
+            --line3: #282d35;
 
-        #homepage { position:absolute; inset:0; z-index:8; display:flex; flex-direction:column; background:var(--ink); }
-        #homepage.hidden { display:none; }
-        .hp-top { display:flex; align-items:center; justify-content:space-between; padding:12px 32px; border-bottom:1px solid var(--rim); flex-shrink:0; }
-        .coord { font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:0.08em; }
-        .htime { font-family:var(--mono); font-size:10px; color:var(--amber); letter-spacing:0.1em; }
-        .hp-main { flex:1; display:flex; overflow:hidden; }
-        .hp-left { width:400px; flex-shrink:0; border-right:1px solid var(--rim); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; }
-        .compass { width:180px; height:180px; position:relative; }
-        .cr1 { width:100%; height:100%; border:1px solid var(--rim2); border-radius:50%; position:absolute; }
-        .cr2 { width:75%; height:75%; border:1px solid var(--rim); border-radius:50%; position:absolute; top:12.5%; left:12.5%; }
-        .cr3 { width:50%; height:50%; border:1px dashed var(--rim); border-radius:50%; position:absolute; top:25%; left:25%; }
-        .cx { position:absolute; inset:0; }
-        .cx::before { content:''; position:absolute; top:0; bottom:0; left:50%; width:1px; background:linear-gradient(to bottom,transparent,var(--rim2),transparent); transform:translateX(-50%); }
-        .cx::after { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:linear-gradient(to right,transparent,var(--rim2),transparent); transform:translateY(-50%); }
-        .needle { position:absolute; top:50%; left:50%; width:2px; height:45%; transform-origin:bottom center; transform:translate(-50%,-100%); animation:spin 12s linear infinite; }
-        .needle::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:18px solid var(--amber); }
-        .needle::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:14px solid var(--rim2); }
-        .ncenter { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:8px; height:8px; background:var(--amber); }
-        .clabels { position:absolute; inset:-24px; }
-        .clabels span { position:absolute; font-family:var(--mono); font-size:10px; font-weight:700; color:var(--slate); letter-spacing:0.1em; }
-        .cn { top:0; left:50%; transform:translateX(-50%); }
-        .cs { bottom:0; left:50%; transform:translateX(-50%); }
-        .ce { top:50%; right:0; transform:translateY(-50%); }
-        .cw { top:50%; left:0; transform:translateY(-50%); }
-        .tagline { margin-top:28px; text-align:center; }
-        .tl-main { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--text); }
-        .tl-main span { color:var(--amber); }
-        .tl-sub { margin-top:4px; font-size:10px; color:var(--dim); }
-        .hp-right { flex:1; display:flex; flex-direction:column; padding:40px 40px 40px 48px; gap:32px; overflow:hidden; }
-        .slabel { font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:10px; }
-        .srow { display:flex; }
-        .spre { display:flex; align-items:center; padding:0 14px; background:var(--panel); border:1px solid var(--rim2); border-right:none; font-family:var(--mono); font-size:11px; color:var(--amber); }
-        #home-bar { flex:1; height:46px; padding:0 16px; background:var(--panel); border:1px solid var(--rim2); border-right:none; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; caret-color:var(--amber); }
-        #home-bar::placeholder { color:var(--dim); }
-        #home-go { height:46px; padding:0 24px; background:var(--amber); border:1px solid var(--amber); color:var(--ink); font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; white-space:nowrap; transition:background 0.15s; }
-        #home-go:hover { background:#f0b040; }
-        .scblock { flex:1; min-height:0; }
-        .scgrid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(2,1fr); gap:8px; height:calc(100% - 24px); }
-        .sc { display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--panel); border:1px solid var(--rim); cursor:pointer; position:relative; overflow:hidden; transition:border-color 0.15s,background 0.15s; }
-        .sc::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--amber); transform:scaleY(0); transform-origin:bottom; transition:transform 0.2s; }
-        .sc:hover { border-color:var(--rim2); background:var(--paper); }
-        .sc:hover::before { transform:scaleY(1); }
-        .sc svg { width:24px; height:24px; color:var(--dim); flex-shrink:0; transition:color 0.15s; }
-        .sc:hover svg { color:var(--amber); }
-        .scname { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--slate); letter-spacing:0.04em; transition:color 0.15s; }
-        .sc:hover .scname { color:var(--text); }
-        .scurl { font-size:9px; color:var(--dim); margin-top:1px; }
-        .hp-bot { display:flex; align-items:center; justify-content:space-between; padding:10px 32px; border-top:1px solid var(--rim); flex-shrink:0; }
-        .hp-bot span { font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:0.06em; }
-        .hp-bot b { color:var(--amber-d); font-weight:400; }
-        .theme-btn { position:fixed; bottom:16px; right:16px; padding:8px 14px; background:rgba(232,160,48,0.07); border:1px solid rgba(232,160,48,0.15); color:rgba(232,160,48,0.4); font-family:var(--mono); font-size:10px; cursor:pointer; z-index:100; transition:background 0.2s,color 0.2s; text-decoration:none; letter-spacing:0.08em; }
-        .theme-btn:hover { background:rgba(232,160,48,0.12); color:rgba(232,160,48,0.7); }
-        @keyframes spin { from{transform:translate(-50%,-100%) rotate(0deg)} to{transform:translate(-50%,-100%) rotate(360deg)} }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+            --amber: #c99138;
+            --amber-soft: #806025;
+            --amber-dim: #493819;
+
+            --text: #d9dce1;
+            --text2: #9a9fa8;
+            --muted: #555b65;
+            --dim: #353a42;
+
+            --green: #52a875;
+            --red: #bd6060;
+
+            --mono: "Space Mono", monospace;
+            --sans: "DM Sans", sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--black);
+            color: var(--text);
+            font-family: var(--sans);
+        }
+
+        body {
+            position: relative;
+        }
+
+        /* Barely-visible terminal grid */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: .22;
+
+            background-image:
+                linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+
+            background-size: 64px 64px;
+        }
+
+        /* ---------- TOP BAR ---------- */
+
+        #toolbar {
+            position: relative;
+            z-index: 20;
+
+            width: 100%;
+            height: 54px;
+
+            display: flex;
+            align-items: center;
+
+            background: rgba(4,5,7,.98);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand {
+            width: 118px;
+            height: 100%;
+
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            padding: 0 18px;
+
+            border-right: 1px solid var(--line);
+
+            cursor: pointer;
+
+            transition: background .18s;
+        }
+
+        .brand:hover {
+            background: var(--panel2);
+        }
+
+        .brand-mark {
+            position: relative;
+
+            width: 19px;
+            height: 19px;
+
+            display: grid;
+            place-items: center;
+
+            border: 1px solid var(--amber-soft);
+
+            transform: rotate(45deg);
+        }
+
+        .brand-mark::after {
+            content: "";
+
+            width: 5px;
+            height: 5px;
+
+            background: var(--amber);
+        }
+
+        .brand-name {
+            color: #c4c7cc;
+
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 700;
+
+            letter-spacing: .16em;
+        }
+
+        #bar-sec {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 0 13px;
+
+            border-right: 1px solid var(--line);
+        }
+
+        .bar-pfx {
+            color: #353a42;
+
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+
+        #bar {
+            flex: 1;
+            min-width: 0;
+
+            height: 100%;
+
+            border: 0;
+            outline: 0;
+
+            background: transparent;
+
+            color: #c7cad0;
+
+            font-family: var(--mono);
+            font-size: 11px;
+
+            caret-color: var(--amber);
+        }
+
+        #bar::placeholder {
+            color: #40454d;
+        }
+
+        #go-btn {
+            height: 29px;
+
+            padding: 0 15px;
+
+            border: 1px solid #62491f;
+            background: #0e0c08;
+
+            color: var(--amber);
+
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700;
+
+            letter-spacing: .12em;
+
+            cursor: pointer;
+
+            transition: .18s;
+        }
+
+        #go-btn:hover {
+            background: #171208;
+            border-color: #876528;
+        }
+
+        .nav-r {
+            height: 100%;
+
+            display: flex;
+            align-items: center;
+
+            flex-shrink: 0;
+        }
+
+        .wisp-w,
+        .stat-w {
+            height: 100%;
+
+            display: flex;
+            align-items: center;
+
+            border-right: 1px solid var(--line);
+        }
+
+        .wisp-w {
+            gap: 9px;
+            padding: 0 15px;
+        }
+
+        .stat-w {
+            gap: 8px;
+            padding: 0 15px;
+            border-right: 0;
+        }
+
+        .wlbl,
+        .slbl {
+            color: #464b54;
+
+            font-family: var(--mono);
+            font-size: 9px;
+
+            text-transform: uppercase;
+            letter-spacing: .12em;
+        }
+
+        #wispSelect {
+            appearance: none;
+
+            min-width: 72px;
+
+            padding: 4px 18px 4px 2px;
+
+            border: 0;
+            outline: 0;
+
+            color: #858b94;
+            background: transparent;
+
+            font-family: var(--mono);
+            font-size: 10px;
+
+            cursor: pointer;
+
+            background-image:
+                linear-gradient(45deg, transparent 50%, #41464e 50%),
+                linear-gradient(135deg, #41464e 50%, transparent 50%);
+
+            background-position:
+                calc(100% - 8px) 50%,
+                calc(100% - 4px) 50%;
+
+            background-size: 4px 4px;
+            background-repeat: no-repeat;
+        }
+
+        #wispSelect option {
+            background: #090b0e;
+            color: #c8cbd0;
+        }
+
+        #statusDot {
+            width: 6px;
+            height: 6px;
+
+            background: #454a51;
+
+            transition: .25s;
+        }
+
+        #statusDot.online {
+            background: var(--green);
+            box-shadow: 0 0 7px rgba(82,168,117,.35);
+        }
+
+        #statusDot.offline {
+            background: var(--red);
+        }
+
+        /* ---------- FRAME ---------- */
+
+        #frame-wrap {
+            position: relative;
+
+            width: 100%;
+            height: calc(100vh - 54px);
+
+            z-index: 1;
+        }
+
+        iframe {
+            display: block;
+
+            width: 100%;
+            height: 100%;
+
+            border: 0;
+            background: #fff;
+        }
+
+        #loading-bar {
+            position: absolute;
+            z-index: 30;
+            top: 0;
+            left: 0;
+
+            width: 0;
+            height: 1px;
+
+            background: var(--amber);
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            box-shadow: 0 0 7px rgba(201,145,56,.45);
+        }
+
+        /* ---------- HOMEPAGE ---------- */
+
+        #homepage {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+
+            display: flex;
+            flex-direction: column;
+
+            background: var(--bg);
+        }
+
+        #homepage.hidden {
+            display: none;
+        }
+
+        .hp-top {
+            height: 39px;
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 24px;
+
+            border-bottom: 1px solid var(--line);
+
+            background: #040507;
+        }
+
+        .coord,
+        .htime {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: .1em;
+        }
+
+        .coord {
+            color: #383d45;
+        }
+
+        .htime {
+            color: #71603d;
+        }
+
+        .hp-main {
+            flex: 1;
+            min-height: 0;
+
+            display: flex;
+
+            overflow: hidden;
+        }
+
+        /* ---------- LEFT PANEL ---------- */
+
+        .hp-left {
+            width: 370px;
+            flex-shrink: 0;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            padding: 35px;
+
+            border-right: 1px solid var(--line);
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(255,255,255,.008),
+                    transparent 40%
+                );
+        }
+
+        .compass {
+            position: relative;
+
+            width: 205px;
+            height: 205px;
+
+            opacity: .88;
+        }
+
+        .cr1,
+        .cr2,
+        .cr3 {
+            position: absolute;
+
+            border-radius: 50%;
+        }
+
+        .cr1 {
+            inset: 0;
+            border: 1px solid var(--line3);
+        }
+
+        .cr2 {
+            inset: 13%;
+            border: 1px solid var(--line2);
+        }
+
+        .cr3 {
+            inset: 27%;
+            border: 1px dashed #20242a;
+        }
+
+        .cx {
+            position: absolute;
+            inset: 0;
+        }
+
+        .cx::before,
+        .cx::after {
+            content: "";
+
+            position: absolute;
+
+            background: linear-gradient(
+                to bottom,
+                transparent,
+                #252a31,
+                transparent
+            );
+        }
+
+        .cx::before {
+            top: 5%;
+            bottom: 5%;
+            left: 50%;
+            width: 1px;
+        }
+
+        .cx::after {
+            left: 5%;
+            right: 5%;
+            top: 50%;
+            height: 1px;
+
+            background: linear-gradient(
+                to right,
+                transparent,
+                #252a31,
+                transparent
+            );
+        }
+
+        .needle {
+            position: absolute;
+
+            top: 50%;
+            left: 50%;
+
+            width: 2px;
+            height: 42%;
+
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%);
+
+            animation: spin 18s linear infinite;
+        }
+
+        .needle::before {
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 17px solid var(--amber);
+        }
+
+        .needle::after {
+            content: "";
+
+            position: absolute;
+
+            bottom: 0;
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            border-left: 3px solid transparent;
+            border-right: 3px solid transparent;
+            border-top: 13px solid #30353d;
+        }
+
+        .ncenter {
+            position: absolute;
+
+            top: 50%;
+            left: 50%;
+
+            width: 7px;
+            height: 7px;
+
+            transform: translate(-50%, -50%);
+
+            background: var(--amber);
+        }
+
+        .clabels {
+            position: absolute;
+            inset: -22px;
+        }
+
+        .clabels span {
+            position: absolute;
+
+            color: #60656e;
+
+            font-family: var(--mono);
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .cn {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .cs {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .ce {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .cw {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .tagline {
+            margin-top: 32px;
+            text-align: center;
+        }
+
+        .tl-main {
+            color: #c4c7cc;
+
+            font-family: var(--mono);
+            font-size: 16px;
+            font-weight: 700;
+
+            letter-spacing: -.02em;
+        }
+
+        .tl-main span {
+            color: var(--amber);
+        }
+
+        .tl-sub {
+            margin-top: 7px;
+
+            color: #454a52;
+
+            font-size: 9px;
+            letter-spacing: .04em;
+        }
+
+        /* ---------- RIGHT ---------- */
+
+        .hp-right {
+            flex: 1;
+            min-width: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            padding: 42px 44px;
+
+            gap: 31px;
+
+            overflow: hidden;
+        }
+
+        .slabel {
+            margin-bottom: 10px;
+
+            color: #454a52;
+
+            font-family: var(--mono);
+            font-size: 9px;
+
+            letter-spacing: .15em;
+            text-transform: uppercase;
+        }
+
+        .srow {
+            display: flex;
+
+            height: 45px;
+        }
+
+        .spre {
+            display: flex;
+            align-items: center;
+
+            padding: 0 13px;
+
+            border: 1px solid var(--line3);
+            border-right: 0;
+
+            background: #090b0e;
+
+            color: #80602d;
+
+            font-family: var(--mono);
+            font-size: 10px;
+        }
+
+        #home-bar {
+            flex: 1;
+            min-width: 0;
+
+            padding: 0 14px;
+
+            border: 1px solid var(--line3);
+            border-right: 0;
+
+            outline: 0;
+
+            background: #090b0e;
+
+            color: #c4c7cc;
+
+            font-family: var(--mono);
+            font-size: 11px;
+
+            caret-color: var(--amber);
+        }
+
+        #home-bar:focus {
+            border-color: #34302a;
+        }
+
+        #home-bar::placeholder {
+            color: #41464e;
+        }
+
+        #home-go {
+            padding: 0 20px;
+
+            border: 1px solid #60481f;
+
+            background: #0d0b07;
+
+            color: var(--amber);
+
+            font-family: var(--mono);
+            font-size: 9px;
+            font-weight: 700;
+
+            letter-spacing: .13em;
+            text-transform: uppercase;
+
+            cursor: pointer;
+
+            transition: .18s;
+        }
+
+        #home-go:hover {
+            background: #151008;
+            border-color: #86642b;
+        }
+
+        /* ---------- QUICK NAV ---------- */
+
+        .scblock {
+            flex: 1;
+            min-height: 0;
+        }
+
+        .scgrid {
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+
+            gap: 7px;
+
+            height: calc(100% - 24px);
+        }
+
+        .sc {
+            position: relative;
+
+            min-width: 0;
+
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 13px;
+
+            border: 1px solid var(--line);
+
+            background: #080a0d;
+
+            cursor: pointer;
+
+            overflow: hidden;
+
+            transition:
+                border-color .18s,
+                background .18s,
+                transform .18s;
+        }
+
+        .sc:hover {
+            background: #0b0d10;
+            border-color: var(--line3);
+
+            transform: translateY(-1px);
+        }
+
+        .sc::before {
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+            top: 0;
+            bottom: 0;
+
+            width: 1px;
+
+            background: var(--amber);
+
+            opacity: 0;
+
+            transition: opacity .18s;
+        }
+
+        .sc:hover::before {
+            opacity: 1;
+        }
+
+        .sc svg {
+            width: 21px;
+            height: 21px;
+
+            flex-shrink: 0;
+
+            color: #4c525b;
+
+            transition: color .18s;
+        }
+
+        .sc:hover svg {
+            color: #a98243;
+        }
+
+        .scname {
+            color: #888e97;
+
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+        .sc:hover .scname {
+            color: #c4c7cc;
+        }
+
+        .scurl {
+            margin-top: 3px;
+
+            color: #3d424a;
+
+            font-size: 8px;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ---------- BOTTOM ---------- */
+
+        .hp-bot {
+            height: 37px;
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 24px;
+
+            border-top: 1px solid var(--line);
+
+            background: #040507;
+        }
+
+        .hp-bot span {
+            color: #363b43;
+
+            font-family: var(--mono);
+            font-size: 8px;
+
+            letter-spacing: .08em;
+        }
+
+        .hp-bot b {
+            color: #624b25;
+            font-weight: 400;
+        }
+
+        /* ---------- THEME BUTTON ---------- */
+
+        .theme-btn {
+            position: fixed;
+
+            right: 15px;
+            bottom: 14px;
+
+            z-index: 100;
+
+            padding: 7px 10px;
+
+            border: 1px solid #19160f;
+
+            background: rgba(7,7,6,.85);
+
+            color: #51462f;
+
+            font-family: var(--mono);
+            font-size: 8px;
+
+            text-decoration: none;
+            letter-spacing: .08em;
+
+            transition: .18s;
+        }
+
+        .theme-btn:hover {
+            border-color: #3c301c;
+            color: #8b713e;
+            background: #0d0b07;
+        }
+
+        /* ---------- ANIMATION ---------- */
+
+        @keyframes spin {
+            from {
+                transform: translate(-50%, -100%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -100%) rotate(360deg);
+            }
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+
+        @media (max-width: 950px) {
+            .hp-left {
+                width: 300px;
+            }
+
+            .compass {
+                width: 170px;
+                height: 170px;
+            }
+
+            .hp-right {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .hp-left {
+                display: none;
+            }
+
+            .hp-right {
+                padding: 25px;
+            }
+
+            .scgrid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .wlbl,
+            .slbl {
+                display: none;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .brand {
+                width: 58px;
+                padding: 0;
+                justify-content: center;
+            }
+
+            .brand-name {
+                display: none;
+            }
+
+            .nav-r {
+                display: none;
+            }
+
+            .hp-right {
+                padding: 20px;
+            }
+
+            .spre {
+                display: none;
+            }
+
+            #home-bar {
+                border-right: 0;
+            }
+
+            #home-go {
+                padding: 0 14px;
+            }
+
+            .scgrid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(8, 1fr);
+            }
+
+            .hp-bot {
+                padding: 0 15px;
+            }
+        }
     </style>
+
     <script src="/sail/baremux/index.js"></script>
     <script src="/sail/scram/scramjet.all.js"></script>
+
     <script>
-        navigator.serviceWorker.register("/sail/sw.js")
+        navigator.serviceWorker.register("/sail/sw.js");
     </script>
 </head>
+
 <body>
+
 <div id="toolbar">
-    <div class="brand" onclick="goHome()"><div class="diamond"></div><span class="brand-name">Sail</span></div>
-    <div id="bar-sec"><span class="bar-pfx">//</span><input type="text" id="bar" placeholder="enter url or search query" autocomplete="off" spellcheck="false"><button id="go-btn" onclick="nav()">GO</button></div>
+
+    <div class="brand" onclick="goHome()">
+        <div class="brand-mark"></div>
+        <span class="brand-name">Sail</span>
+    </div>
+
+    <div id="bar-sec">
+        <span class="bar-pfx">//</span>
+
+        <input
+            type="text"
+            id="bar"
+            placeholder="enter url or search query"
+            autocomplete="off"
+            spellcheck="false"
+        >
+
+        <button id="go-btn" onclick="nav()">GO</button>
+    </div>
+
     <div class="nav-r">
-        <div class="wisp-w"><span class="wlbl">Node</span><select id="wispSelect" onchange="switchWisp()"><option value="wss://wisp.mercurywork.shop/">Mercury</option><option value="wss://anura.pro/">Anura</option><option value="wss://geometry1.gleeze.com/">Mine</option></select></div>
-        <div class="stat-w"><span class="slbl">Signal</span><div id="statusDot"></div></div>
+
+        <div class="wisp-w">
+            <span class="wlbl">Node</span>
+
+            <select id="wispSelect" onchange="switchWisp()">
+                <option value="wss://wisp.mercurywork.shop/">Mercury</option>
+                <option value="wss://anura.pro/">Anura</option>
+                <option value="wss://geometry1.gleeze.com/">Mine</option>
+            </select>
+        </div>
+
+        <div class="stat-w">
+            <span class="slbl">Signal</span>
+            <div id="statusDot"></div>
+        </div>
+
     </div>
 </div>
+
+
 <div id="frame-wrap">
+
     <div id="loading-bar"></div>
+
     <div id="homepage">
-        <div class="hp-top"><span class="coord" id="coord">LAT 00°00′N · LON 000°00′E</span><span class="htime" id="htime">--:--:--</span></div>
+
+        <div class="hp-top">
+            <span class="coord" id="coord">
+                LAT 00°00′N · LON 000°00′E
+            </span>
+
+            <span class="htime" id="htime">
+                --:--:--
+            </span>
+        </div>
+
+
         <div class="hp-main">
+
             <div class="hp-left">
-                <div class="compass"><div class="cr1"></div><div class="cr2"></div><div class="cr3"></div><div class="cx"></div><div class="needle"></div><div class="ncenter"></div><div class="clabels"><span class="cn">N</span><span class="cs">S</span><span class="ce">E</span><span class="cw">W</span></div></div>
-                <div class="tagline"><div class="tl-main">Navigate <span>freely.</span></div><div class="tl-sub">Scramjet-powered · zero logs</div></div>
+
+                <div class="compass">
+
+                    <div class="cr1"></div>
+                    <div class="cr2"></div>
+                    <div class="cr3"></div>
+
+                    <div class="cx"></div>
+
+                    <div class="needle"></div>
+                    <div class="ncenter"></div>
+
+                    <div class="clabels">
+                        <span class="cn">N</span>
+                        <span class="cs">S</span>
+                        <span class="ce">E</span>
+                        <span class="cw">W</span>
+                    </div>
+
+                </div>
+
+                <div class="tagline">
+                    <div class="tl-main">
+                        Navigate <span>freely.</span>
+                    </div>
+
+                    <div class="tl-sub">
+                        Scramjet-powered · zero logs
+                    </div>
+                </div>
+
             </div>
+
+
             <div class="hp-right">
-                <div><div class="slabel">Destination</div><div class="srow"><span class="spre">https://</span><input type="text" id="home-bar" placeholder="where to?" autocomplete="off" spellcheck="false"><button id="home-go" onclick="navHomeBar()">Navigate</button></div></div>
-                <div class="scblock"><div class="slabel">Quick Nav</div><div class="scgrid">
-                    <div class="sc" onclick="go('https://www.youtube.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3V9z" fill="currentColor" stroke="none"/></svg><div><div class="scname">YouTube</div><div class="scurl">youtube.com</div></div></div>
-                    <div class="sc" onclick="go('https://www.wikipedia.org')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9h1l2 6 2-4 2 4 2-6h1"/></svg><div><div class="scname">Wikipedia</div><div class="scurl">wikipedia.org</div></div></div>
-                    <div class="sc" onclick="go('https://play.geforcenow.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v7c0 5-8 9-8 9S4 18 4 13V6z"/><path d="m13 8-4 7h4l-1 5 5-8h-4z" fill="currentColor" stroke="none"/></svg><div><div class="scname">GeForce Now</div><div class="scurl">geforcenow.com</div></div></div>
-                    <div class="sc" onclick="go('https://www.google.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg><div><div class="scname">Google</div><div class="scurl">google.com</div></div></div>
-                    <div class="sc" onclick="go('https://www.reddit.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><circle cx="8.5" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1" fill="currentColor" stroke="none"/><path d="M9 17q3 2 6 0"/></svg><div><div class="scname">Reddit</div><div class="scurl">reddit.com</div></div></div>
-                    <div class="sc" onclick="go('https://www.github.com')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2S18 4 16 5a13.3 13.3 0 0 0-7 0C7 4 5.9 4.6 5.9 4.6A4.2 4.2 0 0 0 5.8 8 4.6 4.6 0 0 0 4.5 11c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg><div><div class="scname">GitHub</div><div class="scurl">github.com</div></div></div>
-                    <div class="sc" onclick="go('https://discord.com/app')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7s-2-2-6-2l-1 2c-1.3-.2-2.7-.2-4 0L8 5C4 5 2 7 2 7S-.5 12 1 17c2 2 5 3 5 3l1-2c1 .4 2.3.7 3.5.7H14l1 2s3-1 5-3c1.5-5-1-10-1-10z"/><circle cx="8.5" cy="13" r="1.5" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1.5" fill="currentColor" stroke="none"/></svg><div><div class="scname">Discord</div><div class="scurl">discord.com</div></div></div>
-                    <div class="sc" onclick="go('https://www.twitch.tv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2 2 6v14h5v3h3l3-3h4l5-5V2H3z"/><line x1="9" y1="8" x2="9" y2="14"/><line x1="14" y1="8" x2="14" y2="14"/></svg><div><div class="scname">Twitch</div><div class="scurl">twitch.tv</div></div></div>
-                </div></div>
+
+                <div>
+
+                    <div class="slabel">
+                        Destination
+                    </div>
+
+                    <div class="srow">
+
+                        <span class="spre">
+                            https://
+                        </span>
+
+                        <input
+                            type="text"
+                            id="home-bar"
+                            placeholder="where to?"
+                            autocomplete="off"
+                            spellcheck="false"
+                        >
+
+                        <button id="home-go" onclick="navHomeBar()">
+                            Navigate
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="scblock">
+
+                    <div class="slabel">
+                        Quick Nav
+                    </div>
+
+                    <div class="scgrid">
+
+                        <div class="sc" onclick="go('https://www.youtube.com')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="2" y="5" width="20" height="14" rx="3"/>
+                                <path d="m10 9 5 3-5 3V9z" fill="currentColor" stroke="none"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">YouTube</div>
+                                <div class="scurl">youtube.com</div>
+                            </div>
+                        </div>
+
+
+                        <div class="sc" onclick="go('https://www.wikipedia.org')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M9 9h1l2 6 2-4 2 4 2-6h1"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">Wikipedia</div>
+                                <div class="scurl">wikipedia.org</div>
+                            </div>
+                        </div>
+
+
+                        <div class="sc" onclick="go('https://play.geforcenow.com')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2l8 4v7c0 5-8 9-8 9S4 18 4 13V6z"/>
+                                <path d="m13 8-4 7h4l-1 5 5-8h-4z" fill="currentColor" stroke="none"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">GeForce Now</div>
+                                <div class="scurl">geforcenow.com</div>
+                            </div>
+                        </div>
+
+
+                        <div class="sc" onclick="go('https://www.google.com')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="11" cy="11" r="7"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">Google</div>
+                                <div class="scurl">google.com</div>
+                            </div>
+                        </div>
+
+
+                        <div class="sc" onclick="go('https://www.reddit.com')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="14" r="7"/>
+                                <circle cx="8.5" cy="13" r="1" fill="currentColor" stroke="none"/>
+                                <circle cx="15.5" cy="13" r="1" fill="currentColor" stroke="none"/>
+                                <path d="M9 17q3 2 6 0"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">Reddit</div>
+                                <div class="scurl">reddit.com</div>
+                            </div>
+                        </div>
+
+
+                        <div class="sc" onclick="go('https://www.github.com')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2S18 4 16 5a13.3 13.3 0 0 0-7 0C7 4 5.9 4.6 5.9 4.6A4.2 4.2 0 0 0 5.8 8 4.6 4.6 0 0 0 4.5 11c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">GitHub</div>
+                                <div class="scurl">github.com</div>
+                            </div>
+                        </div>
+
+
+                        <div class="sc" onclick="go('https://discord.com/app')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M20 7s-2-2-6-2l-1 2c-1.3-.2-2.7-.2-4 0L8 5C4 5 2 7 2 7S-.5 12 1 17c2 2 5 3 5 3l1-2c1 .4 2.3.7 3.5.7H14l1 2s3-1 5-3c1.5-5-1-10-1-10z"/>
+                                <circle cx="8.5" cy="13" r="1.5" fill="currentColor" stroke="none"/>
+                                <circle cx="15.5" cy="13" r="1.5" fill="currentColor" stroke="none"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">Discord</div>
+                                <div class="scurl">discord.com</div>
+                            </div>
+                        </div>
+
+
+                        <div class="sc" onclick="go('https://www.twitch.tv')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M3 2 2 6v14h5v3h3l3-3h4l5-5V2H3z"/>
+                                <line x1="9" y1="8" x2="9" y2="14"/>
+                                <line x1="14" y1="8" x2="14" y2="14"/>
+                            </svg>
+
+                            <div>
+                                <div class="scname">Twitch</div>
+                                <div class="scurl">twitch.tv</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
-        <div class="hp-bot"><span>SAIL · <b>SCRAMJET</b> · ZERO LOGS</span><span id="hdate">--</span></div>
+
+
+        <div class="hp-bot">
+            <span>
+                SAIL · <b>SCRAMJET</b> · ZERO LOGS
+            </span>
+
+            <span id="hdate">
+                --
+            </span>
+        </div>
+
     </div>
-    <iframe src="" id="frame"></iframe>
+
+
+    <iframe
+        src=""
+        id="frame"
+    ></iframe>
+
 </div>
-<a class="theme-btn" href="index.html">⬡ Change Theme</a>
+
+
+<a class="theme-btn" href="index.html">
+    ⬡ Change Theme
+</a>
+
+
 <script>
-    const connection = new BareMux.BareMuxConnection("/sail/baremux/worker.js")
-    connection.setTransport("/sail/libcurl/index.mjs", [{ websocket: "wss://wisp.mercurywork.shop/" }])
-    const { ScramjetController } = $scramjetLoadController()
-    const scramjet = new ScramjetController({ files: { all: "/sail/scram/scramjet.all.js", wasm: "/sail/scram/scramjet.wasm.wasm", sync: "/sail/scram/scramjet.sync.js" }, prefix: "/sail/go/" })
-    scramjet.init()
-    const frame=document.getElementById("frame"),bar=document.getElementById("bar"),lb=document.getElementById("loading-bar"),hp=document.getElementById("homepage")
-    const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-    function tick(){ const n=new Date(),hh=n.getHours().toString().padStart(2,'0'),mm=n.getMinutes().toString().padStart(2,'0'),ss=n.getSeconds().toString().padStart(2,'0'); document.getElementById('htime').textContent=hh+':'+mm+':'+ss; document.getElementById('hdate').textContent=DAYS[n.getDay()].toUpperCase()+' '+n.getDate()+' '+MONTHS[n.getMonth()].toUpperCase()+' '+n.getFullYear(); const lat=(33+Math.sin(Date.now()/60000)*0.5).toFixed(2),lon=(117+Math.cos(Date.now()/60000)*0.5).toFixed(2); document.getElementById('coord').textContent='LAT '+lat+'°N · LON '+lon+'°W' }
-    tick(); setInterval(tick,1000)
-    function showLB(){ lb.style.opacity='1'; lb.style.width='70%'; lb.style.transition='width 1.2s ease' }
-    function hideLB(){ lb.style.width='100%'; lb.style.transition='width 0.3s ease, opacity 0.4s ease 0.3s'; setTimeout(()=>{ lb.style.opacity='0'; lb.style.width='0%'; lb.style.transition='none' },700) }
-    function navigate(raw){ let url=raw.trim(); if(!url)return; if(!url.includes('.')) url='https://duckduckgo.com/search?q='+encodeURIComponent(url); else if(!url.startsWith('http')) url='https://'+url; hp.classList.add('hidden'); showLB(); bar.value=raw.trim(); frame.src=scramjet.encodeUrl(url) }
-    function nav(){ navigate(bar.value) }
-    function navHomeBar(){ navigate(document.getElementById('home-bar').value) }
-    function go(url){ navigate(url) }
-    function goHome(){ hp.classList.remove('hidden'); frame.src=''; bar.value='' }
-    function switchWisp(){ const v=document.getElementById('wispSelect').value; connection.setTransport('/sail/libcurl/index.mjs',[{websocket:v}]); probe(v) }
-    frame.addEventListener('load',hideLB)
-    bar.addEventListener('keydown',e=>{ if(e.key==='Enter') nav() })
-    document.getElementById('home-bar').addEventListener('keydown',e=>{ if(e.key==='Enter') navHomeBar() })
-    let pt=null
-    function probe(url){ const d=document.getElementById('statusDot'); d.className=''; clearTimeout(pt); let ok=false,ws; try{ws=new WebSocket(url)}catch(e){setS(false);return}; const t=setTimeout(()=>{if(!ok){ok=true;setS(false);try{ws.close()}catch(_){}}},5000); ws.onopen=()=>{if(!ok){ok=true;clearTimeout(t);setS(true);try{ws.close()}catch(_){}}}; ws.onerror=()=>{if(!ok){ok=true;clearTimeout(t);setS(false)}}; ws.onclose=e=>{if(!ok){ok=true;clearTimeout(t);setS(e.code!==1006)}}; function setS(on){ d.className=on?'online':'offline'; pt=setTimeout(()=>probe(document.getElementById('wispSelect').value),30000) } }
-    probe('wss://wisp.mercurywork.shop/')
+    const connection = new BareMux.BareMuxConnection(
+        "/sail/baremux/worker.js"
+    );
+
+    connection.setTransport(
+        "/sail/libcurl/index.mjs",
+        [{
+            websocket: "wss://wisp.mercurywork.shop/"
+        }]
+    );
+
+
+    const { ScramjetController } =
+        $scramjetLoadController();
+
+
+    const scramjet = new ScramjetController({
+        files: {
+            all: "/sail/scram/scramjet.all.js",
+            wasm: "/sail/scram/scramjet.wasm.wasm",
+            sync: "/sail/scram/scramjet.sync.js"
+        },
+
+        prefix: "/sail/go/"
+    });
+
+
+    scramjet.init();
+
+
+    const frame =
+        document.getElementById("frame");
+
+    const bar =
+        document.getElementById("bar");
+
+    const loadingBar =
+        document.getElementById("loading-bar");
+
+    const homepage =
+        document.getElementById("homepage");
+
+
+    const DAYS = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+    ];
+
+    const MONTHS = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+    ];
+
+
+    function tick() {
+        const now = new Date();
+
+        const hh =
+            now.getHours()
+                .toString()
+                .padStart(2, "0");
+
+        const mm =
+            now.getMinutes()
+                .toString()
+                .padStart(2, "0");
+
+        const ss =
+            now.getSeconds()
+                .toString()
+                .padStart(2, "0");
+
+
+        document.getElementById("htime")
+            .textContent =
+            hh + ":" + mm + ":" + ss;
+
+
+        document.getElementById("hdate")
+            .textContent =
+            DAYS[now.getDay()].toUpperCase()
+            + " "
+            + now.getDate()
+            + " "
+            + MONTHS[now.getMonth()].toUpperCase()
+            + " "
+            + now.getFullYear();
+
+
+        const lat =
+            (
+                33 +
+                Math.sin(Date.now() / 60000) * .5
+            ).toFixed(2);
+
+        const lon =
+            (
+                117 +
+                Math.cos(Date.now() / 60000) * .5
+            ).toFixed(2);
+
+
+        document.getElementById("coord")
+            .textContent =
+            "LAT "
+            + lat
+            + "°N · LON "
+            + lon
+            + "°W";
+    }
+
+
+    tick();
+
+    setInterval(tick, 1000);
+
+
+    function showLB() {
+        loadingBar.style.opacity = "1";
+        loadingBar.style.width = "70%";
+        loadingBar.style.transition =
+            "width 1.2s ease";
+    }
+
+
+    function hideLB() {
+        loadingBar.style.width = "100%";
+        loadingBar.style.transition =
+            "width .3s ease, opacity .4s ease .3s";
+
+        setTimeout(() => {
+            loadingBar.style.opacity = "0";
+            loadingBar.style.width = "0%";
+            loadingBar.style.transition = "none";
+        }, 700);
+    }
+
+
+    function navigate(raw) {
+        let url = raw.trim();
+
+        if (!url) return;
+
+
+        if (!url.includes(".")) {
+            url =
+                "https://duckduckgo.com/search?q="
+                + encodeURIComponent(url);
+        }
+
+        else if (!url.startsWith("http")) {
+            url = "https://" + url;
+        }
+
+
+        homepage.classList.add("hidden");
+
+        showLB();
+
+        bar.value = raw.trim();
+
+        frame.src =
+            scramjet.encodeUrl(url);
+    }
+
+
+    function nav() {
+        navigate(bar.value);
+    }
+
+
+    function navHomeBar() {
+        navigate(
+            document.getElementById("home-bar").value
+        );
+    }
+
+
+    function go(url) {
+        navigate(url);
+    }
+
+
+    function goHome() {
+        homepage.classList.remove("hidden");
+
+        frame.src = "";
+
+        bar.value = "";
+    }
+
+
+    function switchWisp() {
+        const value =
+            document.getElementById("wispSelect").value;
+
+
+        connection.setTransport(
+            "/sail/libcurl/index.mjs",
+            [{
+                websocket: value
+            }]
+        );
+
+
+        probe(value);
+    }
+
+
+    frame.addEventListener(
+        "load",
+        hideLB
+    );
+
+
+    bar.addEventListener(
+        "keydown",
+        event => {
+            if (event.key === "Enter") {
+                nav();
+            }
+        }
+    );
+
+
+    document
+        .getElementById("home-bar")
+        .addEventListener(
+            "keydown",
+            event => {
+                if (event.key === "Enter") {
+                    navHomeBar();
+                }
+            }
+        );
+
+
+    let probeTimer = null;
+
+
+    function probe(url) {
+        const dot =
+            document.getElementById("statusDot");
+
+
+        dot.className = "";
+
+        clearTimeout(probeTimer);
+
+
+        let finished = false;
+        let socket;
+
+
+        try {
+            socket = new WebSocket(url);
+        }
+
+        catch (error) {
+            setStatus(false);
+            return;
+        }
+
+
+        const timeout =
+            setTimeout(() => {
+
+                if (!finished) {
+                    finished = true;
+
+                    setStatus(false);
+
+                    try {
+                        socket.close();
+                    }
+
+                    catch (_) {}
+                }
+
+            }, 5000);
+
+
+        socket.onopen = () => {
+
+            if (!finished) {
+                finished = true;
+
+                clearTimeout(timeout);
+
+                setStatus(true);
+
+                try {
+                    socket.close();
+                }
+
+                catch (_) {}
+            }
+
+        };
+
+
+        socket.onerror = () => {
+
+            if (!finished) {
+                finished = true;
+
+                clearTimeout(timeout);
+
+                setStatus(false);
+            }
+
+        };
+
+
+        socket.onclose = event => {
+
+            if (!finished) {
+                finished = true;
+
+                clearTimeout(timeout);
+
+                setStatus(
+                    event.code !== 1006
+                );
+            }
+
+        };
+
+
+        function setStatus(online) {
+
+            dot.className =
+                online
+                    ? "online"
+                    : "offline";
+
+
+            probeTimer =
+                setTimeout(
+                    () => probe(
+                        document
+                            .getElementById("wispSelect")
+                            .value
+                    ),
+                    30000
+                );
+        }
+    }
+
+
+    probe(
+        "wss://wisp.mercurywork.shop/"
+    );
 </script>
-    <script src="/dev-messages.js" defer></script>
+
+<script
+    src="/dev-messages.js"
+    defer
+></script>
+
 </body>
 </html>
