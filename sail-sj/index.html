@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Wisely</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; background: #08080f; font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        body {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 52px;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 20%, rgba(109,40,217,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(255,0,60,0.07) 0%, transparent 60%),
+                #08080f;
+        }
+
+        .title { text-align: center; }
+        .title h1 { font-size: 30px; font-weight: 300; color: #fff; letter-spacing: -0.03em; }
+        .title h1 span { font-weight: 600; }
+        .title p  { margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.25); letter-spacing: 0.04em; }
+
+        .cards { display: flex; gap: 20px; }
+
+        .card {
+            width: 260px; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 6px; overflow: hidden;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+        .card:hover { transform: translateY(-6px); }
+
+        /* ══════════════════════════════════════
+           DEEP SPACE preview  (deepspace.html)
+           toolbar: 48px, dark bg2 #141518, blue accent #5ba3d9
+           homepage: big light-weight clock, search bar, 8-col icon grid
+           ══════════════════════════════════════ */
+        .card-purple:hover { border-color: rgba(91,163,217,0.55); box-shadow: 0 16px 40px rgba(91,163,217,0.18); }
+        .prev-ds {
+            height: 170px; overflow: hidden; position: relative;
+            background: #0e0f11;
+            font-family: 'Inter', sans-serif;
+        }
+        /* toolbar */
+        .ds-tb {
+            height: 30px; background: #141518; border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex; align-items: center; gap: 7px; padding: 0 10px; flex-shrink: 0;
+        }
+        .ds-logo {
+            display: flex; align-items: center; gap: 5px;
+            padding: 3px 5px; border-radius: 5px;
+        }
+        .ds-logo-icon {
+            width: 13px; height: 13px; flex-shrink: 0;
+        }
+        .ds-logo-txt { font-size: 9px; font-weight: 600; color: #5ba3d9; letter-spacing: 0.02em; }
+        .ds-sep { width: 1px; height: 10px; background: rgba(255,255,255,0.07); }
+        .ds-bar-wrap { flex: 1; position: relative; display: flex; align-items: center; }
+        .ds-bar {
+            width: 100%; height: 18px; background: #1a1b1f;
+            border: 1px solid rgba(255,255,255,0.07); border-radius: 5px;
+            padding: 0 6px; font-size: 8px; color: rgba(255,255,255,0.2);
+            display: flex; align-items: center;
+        }
+        .ds-go {
+            position: absolute; right: 3px; height: 12px; padding: 0 5px;
+            background: #21232a; border: 1px solid rgba(255,255,255,0.13);
+            border-radius: 3px; font-size: 7px; color: rgba(255,255,255,0.4);
+            display: flex; align-items: center;
+        }
+        .ds-sel {
+            height: 18px; width: 50px; background: #1a1b1f;
+            border: 1px solid rgba(255,255,255,0.07); border-radius: 5px;
+            font-size: 7px; color: rgba(255,255,255,0.25); display: flex; align-items: center; padding: 0 5px;
+        }
+        .ds-pip { width: 5px; height: 5px; border-radius: 50%; background: #5aad7e; flex-shrink: 0; }
+        /* homepage */
+        .ds-hp {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 8px; padding: 10px 12px 8px;
+        }
+        .ds-clock { font-size: 32px; font-weight: 200; letter-spacing: -2px; color: #e8e6e0; line-height: 1; }
+        .ds-clock span { color: #5ba3d9; }
+        .ds-date { font-size: 7px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: #3c3a36; }
+        .ds-search {
+            width: 100%; height: 22px; background: #141518; border: 1px solid rgba(255,255,255,0.13);
+            border-radius: 6px; display: flex; align-items: center; padding: 0 8px; gap: 6px;
+        }
+        .ds-search span { font-size: 7px; color: rgba(255,255,255,0.18); flex: 1; }
+        .ds-search-btn {
+            height: 16px; padding: 0 7px; background: #21232a; border: 1px solid rgba(255,255,255,0.13);
+            border-radius: 4px; font-size: 7px; color: rgba(255,255,255,0.35);
+        }
+        .ds-grid { display: grid; grid-template-columns: repeat(8,1fr); gap: 4px; width: 100%; }
+        .ds-sc {
+            aspect-ratio: 1; background: #141518; border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+        }
+        .ds-sc-icon { width: 10px; height: 10px; background: #21232a; border-radius: 3px; }
+        .ds-sc-lbl { font-size: 5px; color: #3c3a36; }
+
+        /* ══════════════════════════════════════
+           NAUTICAL preview  (nautical.html)
+           toolbar: 54px, near-black, amber #c99138, Space Mono
+           homepage: left panel (compass) + right panel (search + shortcut rows)
+           ══════════════════════════════════════ */
+        .card-naut:hover { border-color: rgba(201,145,56,0.6); box-shadow: 0 16px 40px rgba(201,145,56,0.15); }
+        .prev-naut {
+            height: 170px; overflow: hidden; position: relative;
+            background: #050608; font-family: monospace;
+        }
+        /* subtle grid */
+        .prev-naut::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .18;
+            background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .np-tb {
+            height: 30px; background: rgba(4,5,7,.98); border-bottom: 1px solid #15181d;
+            display: flex; align-items: center; position: relative; z-index: 1;
+        }
+        .np-brand {
+            width: 62px; height: 100%; display: flex; align-items: center; gap: 6px;
+            padding: 0 10px; border-right: 1px solid #15181d; flex-shrink: 0;
+        }
+        .np-diamond { width: 9px; height: 9px; border: 1px solid #806025; transform: rotate(45deg); position: relative; flex-shrink: 0; }
+        .np-diamond::after { content: ''; position: absolute; width: 3px; height: 3px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #c99138; }
+        .np-bname { font-size: 7px; font-weight: 700; color: #a08060; letter-spacing: 0.14em; }
+        .np-bar-sec {
+            flex: 1; height: 100%; display: flex; align-items: center;
+            padding: 0 8px; gap: 6px; border-right: 1px solid #15181d;
+        }
+        .np-pfx { font-size: 7px; color: #353a42; }
+        .np-inp { font-size: 7px; color: #555b65; flex: 1; }
+        .np-gobtn { height: 16px; padding: 0 7px; border: 1px solid #62491f; background: #0e0c08; color: #c99138; font-size: 6px; font-weight: 700; letter-spacing: 0.1em; }
+        .np-right-controls { height: 100%; display: flex; align-items: center; }
+        .np-wisp { height: 100%; display: flex; align-items: center; gap: 5px; padding: 0 8px; border-right: 1px solid #15181d; }
+        .np-wlbl { font-size: 6px; color: #464b54; letter-spacing: 0.1em; }
+        .np-wval { font-size: 7px; color: #9a9fa8; }
+        .np-stat { height: 100%; display: flex; align-items: center; gap: 5px; padding: 0 8px; }
+        .np-slbl { font-size: 6px; color: #464b54; }
+        .np-dot { width: 5px; height: 5px; border-radius: 50%; background: #52a875; flex-shrink: 0; }
+        /* homepage body */
+        .np-hp {
+            display: flex; height: calc(170px - 30px); position: relative; z-index: 1;
+        }
+        .np-hp-top {
+            height: 20px; width: 100%; border-bottom: 1px solid #15181d; background: #040507;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+            font-size: 6px; letter-spacing: 0.1em; position: absolute; top: 0; left: 0; z-index: 2;
+        }
+        .np-coord { color: #383d45; }
+        .np-htime { color: #71603d; }
+        .np-left {
+            width: 80px; flex-shrink: 0; border-right: 1px solid #15181d;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 6px; gap: 5px; margin-top: 20px;
+        }
+        .np-compass {
+            width: 44px; height: 44px; border-radius: 50%; position: relative;
+            border: 1px solid #282d35;
+        }
+        .np-compass::before {
+            content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 1px solid #1d2128;
+        }
+        /* cross lines */
+        .np-cx { position: absolute; inset: 0; }
+        .np-cx::before {
+            content: ''; position: absolute; top: 10%; bottom: 10%; left: 50%; width: 1px;
+            background: linear-gradient(to bottom, transparent, #252a31, transparent);
+        }
+        .np-cx::after {
+            content: ''; position: absolute; left: 10%; right: 10%; top: 50%; height: 1px;
+            background: linear-gradient(to right, transparent, #252a31, transparent);
+        }
+        .np-needle {
+            position: absolute; top: 50%; left: 50%;
+            width: 0; height: 0;
+            border-left: 3px solid transparent; border-right: 3px solid transparent; border-bottom: 16px solid #c99138;
+            transform: translate(-50%, -100%) rotate(15deg);
+            transform-origin: bottom center;
+        }
+        .np-ncenter {
+            position: absolute; top: 50%; left: 50%; width: 5px; height: 5px;
+            background: #c99138; transform: translate(-50%,-50%);
+        }
+        .np-clabels span { position: absolute; font-size: 5px; color: #60656e; font-weight: 700; }
+        .np-cn { top: 1px; left: 50%; transform: translateX(-50%); }
+        .np-cs { bottom: 1px; left: 50%; transform: translateX(-50%); }
+        .np-ce { right: 1px; top: 50%; transform: translateY(-50%); }
+        .np-cw { left: 1px; top: 50%; transform: translateY(-50%); }
+        .np-tagline { font-size: 5.5px; color: #555b65; text-align: center; letter-spacing: 0.1em; }
+        .np-tagline strong { color: #c99138; font-weight: 400; }
+        /* right content */
+        .np-content {
+            flex: 1; min-width: 0; padding: 26px 8px 6px;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .np-search-row {
+            display: flex; align-items: center; height: 18px;
+            border: 1px solid #15181d; background: #080a0d;
+            padding: 0 8px; gap: 6px;
+        }
+        .np-search-pfx { font-size: 6px; color: #353a42; }
+        .np-search-inp { font-size: 6px; color: #555b65; flex: 1; }
+        .np-search-btn2 { height: 12px; padding: 0 5px; border: 1px solid #62491f; background: #0e0c08; color: #c99138; font-size: 5px; font-weight: 700; }
+        .np-links { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+        .np-link-row {
+            height: 18px; background: #080a0d; border: 1px solid #15181d; border-left: 2px solid #c99138;
+            display: flex; align-items: center; padding: 0 7px; gap: 5px;
+        }
+        .np-link-dot { width: 4px; height: 4px; background: #806025; flex-shrink: 0; }
+        .np-link-txt { font-size: 6px; color: #9a9fa8; }
+        .np-link-url { font-size: 5px; color: #464b54; margin-left: auto; }
+
+        /* ══════════════════════════════════════
+           ORBITAL / "Cyber" preview  (cyber.html)
+           toolbar: 68px, near-black, cyan/violet, big rounded brand pill
+           homepage: 2-col grid — identity panel (clock) + dashboard (search + shortcut cards)
+           ══════════════════════════════════════ */
+        .card-cyber:hover { border-color: rgba(105,234,255,0.5); box-shadow: 0 16px 40px rgba(105,234,255,0.15); }
+        .prev-cyber {
+            height: 170px; overflow: hidden; position: relative;
+            background: #05070c; font-family: 'Inter', sans-serif;
+        }
+        /* bg grid */
+        .prev-cyber::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .35;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+            background-size: 20px 20px; mask-image: linear-gradient(to bottom, black, transparent 90%);
+        }
+        .cy-tb {
+            position: relative; z-index: 2; height: 38px; background: rgba(5,7,12,.82);
+            border-bottom: 1px solid rgba(255,255,255,0.075);
+            display: flex; align-items: center; gap: 7px; padding: 0 8px;
+        }
+        /* brand pill */
+        .cy-brand {
+            height: 26px; min-width: 70px; padding: 0 8px;
+            display: flex; align-items: center; gap: 6px;
+            border: 1px solid rgba(255,255,255,0.075); border-radius: 7px;
+            background: rgba(255,255,255,0.025); flex-shrink: 0;
+        }
+        .cy-logo-wrap { width: 14px; height: 14px; position: relative; display: grid; place-items: center; }
+        .cy-logo-ring {
+            position: absolute; inset: 1px; border: 1px solid rgba(105,234,255,0.7); border-radius: 50%;
+        }
+        .cy-logo-ring::after {
+            content: ''; position: absolute; width: 4px; height: 4px; left: 50%; top: 50%;
+            transform: translate(-50%,-50%); border-radius: 50%; background: #69eaff;
+            box-shadow: 0 0 5px #69eaff;
+        }
+        .cy-logo-orbit {
+            position: absolute; width: 18px; height: 6px;
+            border: 1px solid rgba(167,119,255,0.65); border-radius: 50%; transform: rotate(-25deg);
+        }
+        .cy-bname { font-size: 8px; font-weight: 800; letter-spacing: 0.2em; color: #edf6ff; }
+        .cy-bsub { font-size: 5px; color: rgba(237,246,255,0.42); letter-spacing: 0.1em; margin-top: 1px; }
+        /* url bar */
+        .cy-bar-sec {
+            flex: 1; height: 26px; display: flex; align-items: center; gap: 6px;
+            padding: 0 5px 0 9px; border: 1px solid rgba(255,255,255,0.075); border-radius: 7px;
+            background: rgba(255,255,255,0.025);
+        }
+        .cy-pfx { font-size: 7px; color: rgba(105,234,255,0.45); font-family: monospace; }
+        .cy-inp { font-size: 7px; color: rgba(237,246,255,0.5); flex: 1; font-family: monospace; }
+        .cy-gobtn {
+            height: 19px; padding: 0 9px; border-radius: 5px;
+            background: linear-gradient(135deg, #69eaff, #4eabff); color: #031018;
+            font-size: 7px; font-weight: 800; letter-spacing: 0.12em;
+        }
+        /* wisp + status card */
+        .cy-nav-card {
+            height: 26px; padding: 0 8px; display: flex; align-items: center; gap: 5px;
+            border: 1px solid rgba(255,255,255,0.075); border-radius: 7px; background: rgba(255,255,255,0.025);
+        }
+        .cy-wlbl { font-size: 5.5px; color: rgba(237,246,255,0.22); letter-spacing: 0.1em; font-family: monospace; }
+        .cy-wval { font-size: 6.5px; color: rgba(237,246,255,0.7); }
+        .cy-sdot { width: 5px; height: 5px; border-radius: 50%; background: #65f6ae; box-shadow: 0 0 6px rgba(101,246,174,0.8); flex-shrink: 0; }
+        .cy-slbl { font-size: 6px; color: rgba(237,246,255,0.42); font-family: monospace; }
+        /* homepage 2-col */
+        .cy-hp {
+            position: relative; z-index: 1; display: grid; grid-template-columns: 100px 1fr;
+            gap: 6px; padding: 7px; height: calc(170px - 38px);
+        }
+        /* identity panel */
+        .cy-identity {
+            border: 1px solid rgba(255,255,255,0.075); border-radius: 10px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012));
+            padding: 8px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; position: relative;
+        }
+        .cy-identity::before {
+            content: ''; position: absolute; top: 0; left: 10px; right: 10px; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(105,234,255,0.55), transparent);
+        }
+        .cy-eyebrow { font-size: 5.5px; color: #69eaff; letter-spacing: 0.16em; text-transform: uppercase; font-family: monospace; }
+        .cy-clock {
+            font-size: 22px; font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+            background: linear-gradient(120deg, #fff, #91edff 65%, #8d83ff);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .cy-date { font-size: 5px; color: rgba(237,246,255,0.42); letter-spacing: 0.1em; font-family: monospace; }
+        .cy-motto { font-size: 8px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+        .cy-motto span { color: #69eaff; }
+        .cy-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+        .cy-meta { padding: 4px; border: 1px solid rgba(255,255,255,0.075); border-radius: 5px; background: rgba(255,255,255,0.02); }
+        .cy-mlbl { font-size: 4.5px; color: rgba(237,246,255,0.22); letter-spacing: 0.1em; font-family: monospace; }
+        .cy-mval { font-size: 6px; color: rgba(237,246,255,0.75); font-family: monospace; margin-top: 1px; }
+        /* dashboard */
+        .cy-dash {
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .cy-search-panel {
+            padding: 7px; border: 1px solid rgba(255,255,255,0.075); border-radius: 10px;
+            background: rgba(13,17,27,0.65);
+        }
+        .cy-slabel { font-size: 5px; color: rgba(237,246,255,0.42); letter-spacing: 0.14em; text-transform: uppercase; font-family: monospace; margin-bottom: 4px; }
+        .cy-searchwrap { display: flex; align-items: center; height: 22px; border: 1px solid rgba(105,234,255,0.16); border-radius: 6px; background: rgba(0,0,0,0.22); padding: 0 5px 0 7px; gap: 4px; }
+        .cy-sinp { font-size: 7px; color: rgba(237,246,255,0.35); flex: 1; font-family: monospace; }
+        .cy-sbtn { height: 14px; padding: 0 7px; border-radius: 4px; background: linear-gradient(135deg, #69eaff, #628cff); color: #041017; font-size: 5.5px; font-weight: 800; letter-spacing: 0.1em; white-space: nowrap; }
+        .cy-quick-panel {
+            flex: 1; padding: 6px 7px; border: 1px solid rgba(255,255,255,0.075); border-radius: 10px;
+            background: rgba(13,17,27,0.58);
+        }
+        .cy-ptitle { font-size: 6px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #edf6ff; margin-bottom: 5px; }
+        .cy-quick-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; }
+        .cy-sc {
+            height: 22px; border: 1px solid rgba(255,255,255,0.075); border-radius: 7px;
+            background: rgba(255,255,255,0.018); display: flex; flex-direction: column;
+            justify-content: space-between; padding: 3px 4px; overflow: hidden; position: relative;
+        }
+        .cy-sc::before {
+            content: ''; position: absolute; width: 30px; height: 30px; top: -20px; right: -15px;
+            border-radius: 50%; background: rgba(105,234,255,0.08); filter: blur(5px);
+        }
+        .cy-sc-icon { width: 7px; height: 7px; color: rgba(237,246,255,0.42); }
+        .cy-sc-icon svg { width: 100%; height: 100%; }
+        .cy-scname { font-size: 4.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #edf6ff; }
+        .cy-scurl  { font-size: 3.5px; color: rgba(237,246,255,0.22); font-family: monospace; }
+
+        /* card footer */
+        .card-meta { padding: 14px 16px; background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.06); }
+        .card-meta h3 { font-size: 13px; font-weight: 600; color: #fff; }
+        .card-meta p  { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+
+        .pick-btn { width: 100%; padding: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.15s; }
+        .pick-btn:hover { opacity: 0.85; }
+        .pick-purple { background: #5ba3d9; color: #fff; }
+        .pick-naut   { background: #e8a030; color: #0c0d0f; }
+        .pick-cyber  { background: linear-gradient(135deg, #69eaff, #4eabff); color: #031018; }
+
+
+        /* ── OG preview ── */
+        .card-og:hover { border-color: rgba(26,115,232,0.6); box-shadow: 0 16px 40px rgba(26,115,232,0.15); }
+        .prev-og {
+            height: 170px; overflow: hidden;
+            background: #f5f5f5;
+        }
+        .op-topbar { height: 32px; background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+        .op-bar  { flex: 1; height: 14px; background: #fff; border: 1px solid #ccc; border-radius: 3px; }
+        .op-btn  { width: 26px; height: 14px; background: #1a73e8; border-radius: 3px; }
+        .op-sel  { width: 50px; height: 14px; background: #fff; border: 1px solid #ccc; border-radius: 3px; }
+        .op-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .op-txt  { font-size: 11px; color: #333; font-family: sans-serif; }
+        .op-iframe { width: 100%; height: 60px; background: #cfcfcf; border-radius: 2px; }
+        .pick-og { background: #1a73e8; color: #fff; }
+        .footer { font-size: 11px; color: rgba(255,255,255,0.12); letter-spacing: 0.06em; }
+    </style>
+</head>
+<body>
+<div class="title">
+    <h1>Choose your <span>theme</span></h1>
+    <p>Saved automatically — change anytime by revisiting this page</p>
+</div>
+
+<div class="cards">
+
+    <div class="card card-purple">
+        <div class="prev-ds">
+            <!-- toolbar -->
+            <div class="ds-tb">
+                <div class="ds-logo">
+                    <svg class="ds-logo-icon" viewBox="0 0 22 22" fill="none">
+                        <path d="M11 2C11 2 3.5 8 3.5 18H11Z" fill="#5ba3d9" opacity="0.9"/>
+                        <path d="M11 5C11 5 16.5 9.5 17.5 18H11Z" fill="#5ba3d9" opacity="0.4"/>
+                        <line x1="11" y1="2" x2="11" y2="20" stroke="#5ba3d9" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="3.5" y1="20" x2="18.5" y2="20" stroke="#5ba3d9" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                    <span class="ds-logo-txt">sail</span>
+                </div>
+                <div class="ds-sep"></div>
+                <div class="ds-bar-wrap">
+                    <div class="ds-bar">search or enter a url</div>
+                    <div class="ds-go">go</div>
+                </div>
+                <div class="ds-sep"></div>
+                <div class="ds-sel">mercury</div>
+                <div class="ds-pip"></div>
+            </div>
+            <!-- homepage -->
+            <div class="ds-hp">
+                <div class="ds-clock">22<span>:</span>47</div>
+                <div class="ds-date">Wed · Oct 7 · 2026</div>
+                <div class="ds-search">
+                    <span>where to?</span>
+                    <div class="ds-search-btn">navigate →</div>
+                </div>
+                <div style="font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:#3c3a36;align-self:flex-start;">quick access</div>
+                <div class="ds-grid">
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">youtube</div></div>
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">wiki</div></div>
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">geforce</div></div>
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">google</div></div>
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">reddit</div></div>
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">github</div></div>
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">discord</div></div>
+                    <div class="ds-sc"><div class="ds-sc-icon"></div><div class="ds-sc-lbl">twitch</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Deep Space</h3><p>Cool blue · sail icon · 8-shortcut grid</p></div>
+        <button class="pick-btn pick-purple" onclick="go('deepspace.html')">Select</button>
+    </div>
+
+    <div class="card card-naut">
+        <div class="prev-naut">
+            <!-- toolbar -->
+            <div class="np-tb">
+                <div class="np-brand">
+                    <div class="np-diamond"></div>
+                    <span class="np-bname">SAIL</span>
+                </div>
+                <div class="np-bar-sec">
+                    <span class="np-pfx">&gt;</span>
+                    <span class="np-inp">search or enter url_</span>
+                    <div class="np-gobtn">GO</div>
+                </div>
+                <div class="np-right-controls">
+                    <div class="np-wisp">
+                        <span class="np-wlbl">WISP</span>
+                        <span class="np-wval">mercury</span>
+                    </div>
+                    <div class="np-stat">
+                        <span class="np-slbl">STATUS</span>
+                        <div class="np-dot"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- homepage -->
+            <div class="np-hp">
+                <div style="position:absolute;top:0;left:0;right:0;height:20px;background:#040507;border-bottom:1px solid #15181d;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:2;">
+                    <span style="font-size:6px;color:#383d45;letter-spacing:0.1em;font-family:monospace;">36°52′N · 174°45′E</span>
+                    <span style="font-size:6px;color:#71603d;font-family:monospace;">22:47:03</span>
+                </div>
+                <div class="np-left">
+                    <!-- compass -->
+                    <div class="np-compass">
+                        <div class="np-cx"></div>
+                        <div class="np-needle"></div>
+                        <div class="np-ncenter"></div>
+                        <div class="np-clabels">
+                            <span class="np-cn">N</span>
+                            <span class="np-cs">S</span>
+                            <span class="np-ce">E</span>
+                            <span class="np-cw">W</span>
+                        </div>
+                    </div>
+                    <div class="np-tagline">NAV<br><strong>SYSTEM</strong></div>
+                </div>
+                <div class="np-content">
+                    <div class="np-search-row">
+                        <span class="np-search-pfx">&gt;</span>
+                        <span class="np-search-inp">where to?_</span>
+                        <div class="np-search-btn2">GO</div>
+                    </div>
+                    <div class="np-links">
+                        <div class="np-link-row"><div class="np-link-dot"></div><span class="np-link-txt">YouTube</span><span class="np-link-url">youtube.com</span></div>
+                        <div class="np-link-row"><div class="np-link-dot"></div><span class="np-link-txt">Discord</span><span class="np-link-url">discord.com</span></div>
+                        <div class="np-link-row"><div class="np-link-dot"></div><span class="np-link-txt">Reddit</span><span class="np-link-url">reddit.com</span></div>
+                        <div class="np-link-row"><div class="np-link-dot"></div><span class="np-link-txt">GitHub</span><span class="np-link-url">github.com</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Nautical</h3><p>Amber on slate · compass · terminal mono</p></div>
+        <button class="pick-btn pick-naut" onclick="go('nautical.html')">Select</button>
+    </div>
+
+    <div class="card card-cyber">
+        <div class="prev-cyber">
+            <!-- toolbar: brand pill + url bar + wisp/status cards -->
+            <div class="cy-tb">
+                <div class="cy-brand">
+                    <div class="cy-logo-wrap">
+                        <div class="cy-logo-ring"></div>
+                        <div class="cy-logo-orbit"></div>
+                    </div>
+                    <div>
+                        <div class="cy-bname">SAIL</div>
+                        <div class="cy-bsub">SCRAMJET</div>
+                    </div>
+                </div>
+                <div class="cy-bar-sec">
+                    <span class="cy-pfx">//</span>
+                    <span class="cy-inp">search or enter url</span>
+                    <div class="cy-gobtn">LAUNCH</div>
+                </div>
+                <div class="cy-nav-card">
+                    <span class="cy-wlbl">WISP</span>
+                    <span class="cy-wval">mercury</span>
+                </div>
+                <div class="cy-nav-card">
+                    <div class="cy-sdot"></div>
+                    <span class="cy-slbl">online</span>
+                </div>
+            </div>
+            <!-- homepage: 2-col -->
+            <div class="cy-hp">
+                <!-- identity / clock panel -->
+                <div class="cy-identity">
+                    <div>
+                        <div class="cy-eyebrow">LOCAL TIME</div>
+                        <div class="cy-clock">22:47</div>
+                        <div class="cy-date">WED · 07 OCT · 2026</div>
+                    </div>
+                    <div>
+                        <div class="cy-motto">Navigate<br><span>anywhere.</span></div>
+                        <div style="margin-top:5px;" class="cy-meta-grid">
+                            <div class="cy-meta"><div class="cy-mlbl">PROXY</div><div class="cy-mval">scram</div></div>
+                            <div class="cy-meta"><div class="cy-mlbl">STATUS</div><div class="cy-mval">online</div></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- dashboard: search + shortcuts -->
+                <div class="cy-dash">
+                    <div class="cy-search-panel">
+                        <div class="cy-slabel">NAVIGATE</div>
+                        <div class="cy-searchwrap">
+                            <span class="cy-sinp">where to?</span>
+                            <div class="cy-sbtn">LAUNCH</div>
+                        </div>
+                    </div>
+                    <div class="cy-quick-panel">
+                        <div class="cy-ptitle">QUICK LINKS</div>
+                        <div class="cy-quick-grid">
+                            <div class="cy-sc">
+                                <div class="cy-sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg></div>
+                                <div class="cy-scname">YT</div>
+                            </div>
+                            <div class="cy-sc">
+                                <div class="cy-sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="8.5" cy="11" r="1.5" fill="currentColor" stroke="none"/><circle cx="15.5" cy="11" r="1.5" fill="currentColor" stroke="none"/></svg></div>
+                                <div class="cy-scname">RDT</div>
+                            </div>
+                            <div class="cy-sc">
+                                <div class="cy-sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77"/></svg></div>
+                                <div class="cy-scname">GH</div>
+                            </div>
+                            <div class="cy-sc">
+                                <div class="cy-sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0"/></svg></div>
+                                <div class="cy-scname">DC</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Orbital</h3><p>Cyan glow · frosted panels · brand pill bar</p></div>
+        <button class="pick-btn pick-cyber" onclick="go('cyber.html')">Select</button>
+    </div>
+
+    <div class="card card-og">
+        <div class="prev-og">
+            <div class="op-topbar"><div class="op-bar"></div><div class="op-btn"></div><div class="op-sel"></div></div>
+            <div class="op-body">
+                <div class="op-txt">Simple. Fast. No frills.</div>
+                <div class="op-iframe"></div>
+            </div>
+        </div>
+        <div class="card-meta"><h3>Original</h3><p>Bare-bones UI · fastest load · most reliable</p></div>
+        <button class="pick-btn pick-og" onclick="go('og.html')">Select</button>
+    </div>
+
+</div>
+
+<p class="footer">SAIL · SCRAMJET PROXY</p>
+
+<script>
+    function go(page) { window.location.href = page }
+</script>
+    <script src="/dev-messages.js" defer></script>
+
+
+
+<script>
+(() => {
+  if (document.getElementById("sail-dev-message-overlay")) return;
+
+  const style = document.createElement("style");
+  style.textContent = `
+#sail-dev-message-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  background: rgba(0,0,0,.72) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  box-sizing: border-box !important;
+}
+.sail-dev-message-box {
+  width: min(520px, 100%) !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  padding: 26px !important;
+  border-radius: 14px !important;
+  background: #111 !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.2) !important;
+  box-shadow: 0 20px 70px rgba(0,0,0,.6) !important;
+  text-align: left !important;
+}
+.sail-dev-message-title {
+  font-size: 21px !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  color: #fff !important;
+}
+.sail-dev-message-text {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  overflow-wrap: anywhere !important;
+}
+.sail-backup-domain {
+  display: block !important;
+  padding: 12px 14px !important;
+  margin-top: 10px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,.05) !important;
+  color: #fff !important;
+  text-decoration: none !important;
+  transition: background .2s ease, border-color .2s ease !important;
+}
+.sail-backup-domain:hover {
+  background: rgba(255,255,255,.12) !important;
+  border-color: rgba(255,255,255,.3) !important;
+}
+.sail-backup-domain::after {
+  content: "↗";
+  float: right;
+  opacity: .65;
+}
+.sail-popup-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  margin-top: 18px !important;
+}
+.sail-popup-ok {
+  border: 1px solid rgba(255,255,255,.25) !important;
+  border-radius: 8px !important;
+  padding: 9px 22px !important;
+  background: #fff !important;
+  color: #111 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+.sail-popup-ok:hover { background: #e8e8e8 !important; }
+@media (max-width: 480px) {
+  .sail-dev-message-box { padding: 22px !important; }
+  .sail-dev-message-title { font-size: 19px !important; }
+}
+`;
+  document.head.appendChild(style);
+
+  const overlay = document.createElement("div");
+  overlay.id = "sail-dev-message-overlay";
+
+  const box = document.createElement("div");
+  box.className = "sail-dev-message-box";
+
+  const title = document.createElement("div");
+  title.className = "sail-dev-message-title";
+  title.textContent = "Check Out Our Backup Domains";
+
+  const list = document.createElement("div");
+  list.className = "sail-dev-message-text";
+  list.textContent = "Loading domains...";
+
+  const actions = document.createElement("div");
+  actions.className = "sail-popup-actions";
+
+  const okButton = document.createElement("button");
+  okButton.className = "sail-popup-ok";
+  okButton.type = "button";
+  okButton.textContent = "OK";
+  okButton.addEventListener("click", () => overlay.remove());
+
+  actions.appendChild(okButton);
+  box.appendChild(title);
+  box.appendChild(list);
+  box.appendChild(actions);
+  overlay.appendChild(box);
+
+  function showPopup() {
+    if (!document.body.contains(overlay)) {
+      document.body.appendChild(overlay);
+    }
+  }
+
+  async function loadDomains() {
+    try {
+      const response = await fetch("./domains.txt", {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const text = await response.text();
+
+      const domains = text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith("#"));
+
+      list.replaceChildren();
+
+      let count = 0;
+
+      domains.forEach(domain => {
+        try {
+          // Accept full URLs or plain domain names.
+          const url = new URL(
+            /^[a-z][a-z0-9+.-]*:\/\//i.test(domain)
+              ? domain
+              : `https://${domain}`
+          );
+
+          // Only allow HTTP and HTTPS links.
+          if (!["https:", "http:"].includes(url.protocol)) return;
+
+          const link = document.createElement("a");
+          link.className = "sail-backup-domain";
+          link.href = url.href;
+          link.textContent = url.hostname;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+
+          list.appendChild(link);
+          count++;
+        } catch {
+          // Skip invalid entries.
+        }
+      });
+
+      if (count === 0) {
+        list.textContent = "No valid domains found in domains.txt.";
+      }
+    } catch (error) {
+      list.textContent =
+        "Unable to load domains.txt. Check that the file exists and is accessible.";
+      console.error("Failed to load domains.txt:", error);
+    }
+  }
+
+  if (document.body) showPopup();
+  else {
+    document.addEventListener("DOMContentLoaded", showPopup, {
+      once: true
+    });
+  }
+
+  loadDomains();
+})();
+</script>
+
+
+</body>
+</html>
