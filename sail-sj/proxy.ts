@@ -13,6 +13,7 @@ const ALLOWED_PAGES = [
   "/nautical.html",
   "/privacy.md",
   "/terms.md",
+  "/domains.txt",
 ];
 
 type IPInfo = {
