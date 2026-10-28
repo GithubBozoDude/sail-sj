@@ -844,7 +844,12 @@ iframe {
 </head>
 
 <body>
-
+<script>
+        window.addEventListener('beforeunload', function (event) {
+            event.preventDefault();
+            event.returnValue = ''; 
+        });
+    </script>
 <div id="toolbar">
 
     <div class="brand" onclick="goHome()">
@@ -1421,6 +1426,196 @@ probe("wss://wisp.mercurywork.shop/");
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sail/sw.js");
 }
+</script>
+
+<script>
+(() => {
+  if (document.getElementById("sail-dev-message-overlay")) return;
+
+  const style = document.createElement("style");
+  style.textContent = `
+#sail-dev-message-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  background: rgba(0,0,0,.72) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  box-sizing: border-box !important;
+}
+.sail-dev-message-box {
+  width: min(520px, 100%) !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  padding: 26px !important;
+  border-radius: 14px !important;
+  background: #111 !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.2) !important;
+  box-shadow: 0 20px 70px rgba(0,0,0,.6) !important;
+  text-align: left !important;
+}
+.sail-dev-message-title {
+  font-size: 21px !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  color: #fff !important;
+}
+.sail-dev-message-text {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  overflow-wrap: anywhere !important;
+}
+.sail-backup-domain {
+  display: block !important;
+  padding: 12px 14px !important;
+  margin-top: 10px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,.05) !important;
+  color: #fff !important;
+  text-decoration: none !important;
+  transition: background .2s ease, border-color .2s ease !important;
+}
+.sail-backup-domain:hover {
+  background: rgba(255,255,255,.12) !important;
+  border-color: rgba(255,255,255,.3) !important;
+}
+.sail-backup-domain::after {
+  content: "↗";
+  float: right;
+  opacity: .65;
+}
+.sail-popup-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  margin-top: 18px !important;
+}
+.sail-popup-ok {
+  border: 1px solid rgba(255,255,255,.25) !important;
+  border-radius: 8px !important;
+  padding: 9px 22px !important;
+  background: #fff !important;
+  color: #111 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+.sail-popup-ok:hover { background: #e8e8e8 !important; }
+@media (max-width: 480px) {
+  .sail-dev-message-box { padding: 22px !important; }
+  .sail-dev-message-title { font-size: 19px !important; }
+}
+`;
+  document.head.appendChild(style);
+
+  const overlay = document.createElement("div");
+  overlay.id = "sail-dev-message-overlay";
+
+  const box = document.createElement("div");
+  box.className = "sail-dev-message-box";
+
+  const title = document.createElement("div");
+  title.className = "sail-dev-message-title";
+  title.textContent = "Check Out Our Backup Domains";
+
+  const list = document.createElement("div");
+  list.className = "sail-dev-message-text";
+  list.textContent = "Loading domains...";
+
+  const actions = document.createElement("div");
+  actions.className = "sail-popup-actions";
+
+  const okButton = document.createElement("button");
+  okButton.className = "sail-popup-ok";
+  okButton.type = "button";
+  okButton.textContent = "OK";
+  okButton.addEventListener("click", () => overlay.remove());
+
+  actions.appendChild(okButton);
+  box.appendChild(title);
+  box.appendChild(list);
+  box.appendChild(actions);
+  overlay.appendChild(box);
+
+  function showPopup() {
+    if (!document.body.contains(overlay)) {
+      document.body.appendChild(overlay);
+    }
+  }
+
+  async function loadDomains() {
+    try {
+      const response = await fetch("./domains.txt", {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const text = await response.text();
+
+      const domains = text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith("#"));
+
+      list.replaceChildren();
+
+      let count = 0;
+
+      domains.forEach(domain => {
+        try {
+          // Accept full URLs or plain domain names.
+          const url = new URL(
+            /^[a-z][a-z0-9+.-]*:\/\//i.test(domain)
+              ? domain
+              : `https://${domain}`
+          );
+
+          // Only allow HTTP and HTTPS links.
+          if (!["https:", "http:"].includes(url.protocol)) return;
+
+          const link = document.createElement("a");
+          link.className = "sail-backup-domain";
+          link.href = url.href;
+          link.textContent = url.hostname;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+
+          list.appendChild(link);
+          count++;
+        } catch {
+          // Skip invalid entries.
+        }
+      });
+
+      if (count === 0) {
+        list.textContent = "No valid domains found in domains.txt.";
+      }
+    } catch (error) {
+      list.textContent =
+        "Unable to load domains.txt. Check that the file exists and is accessible.";
+      console.error("Failed to load domains.txt:", error);
+    }
+  }
+
+  if (document.body) showPopup();
+  else {
+    document.addEventListener("DOMContentLoaded", showPopup, {
+      once: true
+    });
+  }
+
+  loadDomains();
+})();
 </script>
 
 </body>
