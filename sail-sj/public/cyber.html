@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,98 +11,6 @@
 <script src="/sail/baremux/index.js"></script>
 <script src="/sail/scram/scramjet.all.js"></script>
 <style>
-
-/* PIN Modal */
-#pin-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,.75);
-    backdrop-filter: blur(6px);
-}
-
-#pin-overlay.show {
-    display: flex;
-}
-
-.pin-modal {
-    width: 320px;
-    padding: 28px;
-    background: #090b0e;
-    border: 1px solid #62491f;
-    box-shadow: 0 20px 60px rgba(0,0,0,.7);
-    text-align: center;
-    font-family: "Space Mono", monospace;
-}
-
-.pin-modal h2 {
-    margin: 0 0 8px;
-    color: #c99138;
-    font-size: 15px;
-    letter-spacing: .12em;
-}
-
-.pin-modal p {
-    margin: 0 0 20px;
-    color: #686e77;
-    font-size: 10px;
-}
-
-#pin-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px;
-    background: #050608;
-    border: 1px solid #282d35;
-    outline: none;
-    color: #c99138;
-    text-align: center;
-    font-family: "Space Mono", monospace;
-    font-size: 18px;
-    letter-spacing: .3em;
-}
-
-#pin-input:focus {
-    border-color: #806025;
-}
-
-#pin-error {
-    min-height: 16px;
-    margin-top: 10px;
-    color: #bd6060;
-    font-size: 10px;
-}
-
-.pin-buttons {
-    display: flex;
-    gap: 8px;
-    margin-top: 18px;
-}
-
-.pin-buttons button {
-    flex: 1;
-    padding: 10px;
-    cursor: pointer;
-    font-family: "Space Mono", monospace;
-    font-size: 10px;
-}
-
-#pin-cancel {
-    background: #090b0e;
-    border: 1px solid #282d35;
-    color: #858b94;
-}
-
-#pin-submit {
-    background: #0e0c08;
-    border: 1px solid #62491f;
-    color: #c99138;
-}
-
-
 /* SAIL // ORBITAL */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -268,82 +177,7 @@ function showLB(){loadingBar.style.opacity="1";loadingBar.style.width="70%";load
 function hideLB(){loadingBar.style.width="100%";loadingBar.style.transition="width .3s ease, opacity .4s ease .3s";setTimeout(()=>{loadingBar.style.opacity="0";loadingBar.style.width="0%";loadingBar.style.transition="none";},700);}
 function navigate(raw){let url=raw.trim();if(!url)return;if(!url.includes("."))url="https://duckduckgo.com/search?q="+encodeURIComponent(url);else if(!url.startsWith("http"))url="https://"+url;homepage.classList.add("hidden");showLB();bar.value=raw.trim();frame.src=scramjet.encodeUrl(url);}
 function nav(){navigate(bar.value);}function navHomeBar(){navigate(document.getElementById("home-bar").value);}function go(url){navigate(url);}function goHome(){homepage.classList.remove("hidden");frame.src="";bar.value="";document.getElementById("home-bar").value="";}
-const PIN = "134581012";
-
-let previousWisp = "wss://wisp.mercurywork.shop/";
-let pendingWisp = null;
-
-const wispSelect = document.getElementById("wispSelect");
-const pinOverlay = document.getElementById("pin-overlay");
-const pinInput = document.getElementById("pin-input");
-const pinError = document.getElementById("pin-error");
-
-function switchWisp() {
-    const value = wispSelect.value;
-
-    // Require PIN for Mine
-    if (value === "wss://geometry1.gleeze.com/") {
-        pendingWisp = value;
-
-        // Revert selection until PIN is entered
-        wispSelect.value = previousWisp;
-
-        pinInput.value = "";
-        pinError.textContent = "";
-        pinOverlay.classList.add("show");
-
-        setTimeout(() => pinInput.focus(), 100);
-        return;
-    }
-
-    // Other servers don't require PIN
-    previousWisp = value;
-    connection.setTransport(
-        "/sail/libcurl/index.mjs",
-        [{ websocket: value }]
-    );
-    probe(value);
-}
-
-function unlockWisp() {
-    if (pinInput.value === PIN) {
-        pinOverlay.classList.remove("show");
-
-        previousWisp = pendingWisp;
-        wispSelect.value = pendingWisp;
-
-        connection.setTransport(
-            "/sail/libcurl/index.mjs",
-            [{ websocket: pendingWisp }]
-        );
-
-        probe(pendingWisp);
-
-        pendingWisp = null;
-        pinInput.value = "";
-        pinError.textContent = "";
-    } else {
-        pinError.textContent = "Incorrect PIN. Try again.";
-        pinInput.value = "";
-        pinInput.focus();
-    }
-}
-
-function cancelPin() {
-    pinOverlay.classList.remove("show");
-    pinInput.value = "";
-    pinError.textContent = "";
-    pendingWisp = null;
-    wispSelect.value = previousWisp;
-}
-
-document.getElementById("pin-submit").addEventListener("click", unlockWisp);
-document.getElementById("pin-cancel").addEventListener("click", cancelPin);
-
-pinInput.addEventListener("keydown", event => {
-    if (event.key === "Enter") unlockWisp();
-    if (event.key === "Escape") cancelPin();
-});
+function switchWisp(){const value=document.getElementById("wispSelect").value;connection.setTransport("/sail/libcurl/index.mjs",[{websocket:value}]);probe(value);}
 frame.addEventListener("load",hideLB);
 bar.addEventListener("keydown",event=>{if(event.key==="Enter")nav();});
 document.getElementById("home-bar").addEventListener("keydown",event=>{if(event.key==="Enter")navHomeBar();});
@@ -423,28 +257,55 @@ probe("wss://wisp.mercurywork.shop/");
 })();
 </script>
 
-<div id="pin-overlay">
-    <div class="pin-modal">
-        <h2>ACCESS REQUIRED</h2>
-        <p>Enter the 9-digit PIN to use this Wisp node.</p>
 
-        <input
-            id="pin-input"
-            type="password"
-            inputmode="numeric"
-            maxlength="9"
-            placeholder="•••••••••"
-            autocomplete="off"
-        >
 
-        <div id="pin-error"></div>
-
-        <div class="pin-buttons">
-            <button id="pin-cancel">CANCEL</button>
-            <button id="pin-submit">UNLOCK</button>
-        </div>
-    </div>
+<style id="mine-pin-style">
+#minePinOverlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);padding:18px;font-family:inherit}
+#minePinOverlay.open{display:flex}
+#minePinCard{width:min(360px,100%);padding:24px;border-radius:16px;background:#10141c;color:#f1f5f9;border:1px solid rgba(255,255,255,.15);box-shadow:0 24px 90px rgba(0,0,0,.55)}
+#minePinCard h2{margin:0 0 8px;font-size:18px;font-weight:700}
+#minePinCard p{margin:0 0 18px;color:#9aa4b2;font-size:13px;line-height:1.45}
+#minePinInput{width:100%;height:44px;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:#080b10;color:#fff;outline:none;font:16px monospace;letter-spacing:.16em;text-align:center}
+#minePinInput:focus{border-color:#7abfff;box-shadow:0 0 0 3px rgba(122,191,255,.12)}
+#minePinError{min-height:18px;margin:8px 0 12px;color:#ff7788;font-size:12px;text-align:center}
+#minePinActions{display:flex;gap:9px}
+#minePinActions button{flex:1;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.15);cursor:pointer;font:600 13px inherit}
+#minePinCancel{background:#202632;color:#d4dbe5}
+#minePinSubmit{background:#2879cf;color:#fff;border-color:#2879cf}
+</style>
+<div id="minePinOverlay" role="dialog" aria-modal="true" aria-labelledby="minePinTitle">
+  <div id="minePinCard">
+    <h2 id="minePinTitle">PIN required</h2>
+    <p>Enter the 9-digit PIN to select the Mine server.</p>
+    <input id="minePinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="9" aria-label="9-digit PIN">
+    <div id="minePinError" role="status"></div>
+    <div id="minePinActions"><button id="minePinCancel" type="button">Cancel</button><button id="minePinSubmit" type="button">Unlock</button></div>
+  </div>
 </div>
+<script id="mine-pin-logic">
+(function(){
+  const REQUIRED_PIN='134581012';
+  const isOg=!!document.getElementById('server');
+  const selector=document.getElementById(isOg?'server':'wispSelect');
+  if(!selector)return;
+  const mineValue='wss://geometry1.gleeze.com/';
+  const overlay=document.getElementById('minePinOverlay'),input=document.getElementById('minePinInput'),error=document.getElementById('minePinError');
+  let previous=selector.value,pending=null;
+  function setTransport(value){
+    if(isOg){connection.setTransport('/sail/libcurl/index.mjs',[{websocket:value}]);probe(value);}
+    else{connection.setTransport('/sail/libcurl/index.mjs',[{websocket:value}]);probe(value);}
+  }
+  function closeModal(){overlay.classList.remove('open');input.value='';error.textContent='';pending=null;}
+  function cancel(){selector.value=previous;closeModal();}
+  function submit(){if(input.value===REQUIRED_PIN){const value=pending;previous=value;selector.value=value;closeModal();setTransport(value);}else{error.textContent='Incorrect PIN. Try again.';input.value='';input.focus();}}
+  function onChange(){const value=selector.value;if(value===mineValue&&previous!==mineValue){pending=value;selector.value=previous;overlay.classList.add('open');input.focus();}else{previous=value;setTransport(value);}}
+  if(isOg)window.changeServer=onChange;else window.switchWisp=onChange;
+  document.getElementById('minePinSubmit').addEventListener('click',submit);
+  document.getElementById('minePinCancel').addEventListener('click',cancel);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')submit();if(e.key==='Escape')cancel();});
+  overlay.addEventListener('click',e=>{if(e.target===overlay)cancel();});
+})();
+</script>
 
 </body>
 </html>
