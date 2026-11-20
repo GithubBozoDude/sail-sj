@@ -247,25 +247,16 @@
 
 
 <style id="mine-pin-style">
-#minePinOverlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);padding:18px;font-family:inherit}
-#minePinOverlay.open{display:flex}
-#minePinCard{width:min(360px,100%);padding:24px;border-radius:16px;background:#10141c;color:#f1f5f9;border:1px solid rgba(255,255,255,.15);box-shadow:0 24px 90px rgba(0,0,0,.55)}
-#minePinCard h2{margin:0 0 8px;font-size:18px;font-weight:700}
-#minePinCard p{margin:0 0 18px;color:#9aa4b2;font-size:13px;line-height:1.45}
-#minePinInput{width:100%;height:44px;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:#080b10;color:#fff;outline:none;font:16px monospace;letter-spacing:.16em;text-align:center}
-#minePinInput:focus{border-color:#7abfff;box-shadow:0 0 0 3px rgba(122,191,255,.12)}
-#minePinError{min-height:18px;margin:8px 0 12px;color:#ff7788;font-size:12px;text-align:center}
-#minePinActions{display:flex;gap:9px}
-#minePinActions button{flex:1;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.15);cursor:pointer;font:600 13px inherit}
-#minePinCancel{background:#202632;color:#d4dbe5}
-#minePinSubmit{background:#2879cf;color:#fff;border-color:#2879cf}
+/* NAUTICAL: analog chart-room / ship console */
+#minePinOverlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.82);backdrop-filter:blur(5px)}#minePinOverlay.open{display:flex}
+#minePinCard{position:relative;width:min(410px,100%);padding:0 25px 24px;overflow:hidden;background:linear-gradient(180deg,#0b0e12,#050608);color:var(--text);border:1px solid #4a3920;box-shadow:0 0 0 4px #07090b,0 22px 75px #000;border-radius:3px;font-family:var(--sans)}#minePinCard:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#493719,var(--amber),#493719)}#minePinCard .pin-top{display:flex;justify-content:space-between;margin:0 -25px 20px;padding:15px 18px 12px;border-bottom:1px solid #252019;background:#07090b;color:#a27b39;font:9px var(--mono);letter-spacing:.15em}#minePinCard .pin-mark{color:#555b65}#minePinCard .pin-emblem{width:58px;height:58px;display:grid;place-items:center;margin:0 auto 16px;border:1px solid #5a4524;border-radius:50%;color:var(--amber);font:25px var(--mono);background:radial-gradient(circle,#1b160d,#080a0c 70%);box-shadow:0 0 20px rgba(201,145,56,.08)}
+#minePinCard h2{margin:0 0 8px;text-align:center;color:#d9dce1;font:700 15px var(--mono);letter-spacing:.08em;text-transform:uppercase}#minePinCard p{margin:0 0 20px;text-align:center;color:#777d86;font:10px/1.7 var(--mono);letter-spacing:.04em}#minePinInput{box-sizing:border-box;width:100%;height:46px;padding:0 12px;border:1px solid #3c3426;border-radius:2px;background:#050608;color:var(--amber);outline:0;text-align:center;font:16px var(--mono);letter-spacing:.35em}#minePinInput:focus{border-color:var(--amber);box-shadow:inset 0 0 0 1px rgba(201,145,56,.15)}#minePinError{min-height:18px;margin:10px 0 12px;color:#bd6060;text-align:center;font:10px var(--mono)}#minePinActions{display:flex;gap:9px}#minePinActions button{flex:1;height:37px;border:1px solid #44351e;border-radius:2px;cursor:pointer;font:700 9px var(--mono);letter-spacing:.13em;text-transform:uppercase}#minePinCancel{background:#090b0e;color:#777d86}#minePinSubmit{background:#151108;color:var(--amber);border-color:#765823}#minePinSubmit:hover{background:#211909}
 </style>
 <div id="minePinOverlay" role="dialog" aria-modal="true" aria-labelledby="minePinTitle">
   <div id="minePinCard">
-    <h2 id="minePinTitle">PIN required</h2>
-    <p>Enter the 9-digit PIN to select the Mine server.</p>
+    <div class="pin-top"><span>SAIL / BRIDGE ACCESS</span><span class="pin-mark">CHART ROOM · 03</span></div><div class="pin-emblem" aria-hidden="true">✥</div><h2 id="minePinTitle">Restricted navigation node</h2><p>AUTHORIZATION REQUIRED<br>Confirm bridge credentials to engage the private navigation route.</p>
     <input id="minePinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="9" aria-label="9-digit PIN">
-    <div id="minePinError" role="status"></div>
+    <div id="minePinError" role="status" aria-live="polite"></div>
     <div id="minePinActions"><button id="minePinCancel" type="button">Cancel</button><button id="minePinSubmit" type="button">Unlock</button></div>
   </div>
 </div>

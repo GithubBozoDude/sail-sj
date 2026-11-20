@@ -220,25 +220,16 @@
 
 
 <style id="mine-pin-style">
-#minePinOverlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);padding:18px;font-family:inherit}
-#minePinOverlay.open{display:flex}
-#minePinCard{width:min(360px,100%);padding:24px;border-radius:16px;background:#10141c;color:#f1f5f9;border:1px solid rgba(255,255,255,.15);box-shadow:0 24px 90px rgba(0,0,0,.55)}
-#minePinCard h2{margin:0 0 8px;font-size:18px;font-weight:700}
-#minePinCard p{margin:0 0 18px;color:#9aa4b2;font-size:13px;line-height:1.45}
-#minePinInput{width:100%;height:44px;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:#080b10;color:#fff;outline:none;font:16px monospace;letter-spacing:.16em;text-align:center}
-#minePinInput:focus{border-color:#7abfff;box-shadow:0 0 0 3px rgba(122,191,255,.12)}
-#minePinError{min-height:18px;margin:8px 0 12px;color:#ff7788;font-size:12px;text-align:center}
-#minePinActions{display:flex;gap:9px}
-#minePinActions button{flex:1;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.15);cursor:pointer;font:600 13px inherit}
-#minePinCancel{background:#202632;color:#d4dbe5}
-#minePinSubmit{background:#2879cf;color:#fff;border-color:#2879cf}
+/* DEEP SPACE: restrained instrument terminal */
+#minePinOverlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,7,10,.82);backdrop-filter:blur(7px)}#minePinOverlay.open{display:flex}
+#minePinCard{width:min(390px,100%);padding:0 23px 22px;border:1px solid var(--bd2);border-radius:9px;background:var(--bg2);color:var(--tx);box-shadow:0 25px 80px rgba(0,0,0,.55);font-family:var(--sans)}#minePinCard .pin-top{display:flex;justify-content:space-between;margin:0 -23px 23px;padding:12px 16px;border-bottom:1px solid var(--bd);color:var(--tx3);font:10px var(--mono);letter-spacing:.13em}#minePinCard .pin-mark{color:var(--ac)}#minePinCard .pin-emblem{margin-bottom:15px;color:var(--ac);font:22px var(--mono)}
+#minePinCard h2{margin:0 0 8px;color:var(--tx);font-size:17px;font-weight:500}#minePinCard p{margin:0 0 19px;color:var(--tx2);font:12px/1.65 var(--sans)}#minePinInput{box-sizing:border-box;width:100%;height:43px;padding:0 12px;border:1px solid var(--bd2);border-radius:var(--rad);background:var(--bg3);color:var(--acl);outline:0;text-align:center;font:15px var(--mono);letter-spacing:.24em}#minePinInput:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acg)}#minePinError{min-height:18px;margin:9px 0 12px;color:#c9574a;font-size:12px}#minePinActions{display:flex;justify-content:flex-end;gap:8px}#minePinActions button{height:35px;padding:0 16px;border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font:500 12px var(--sans)}#minePinCancel{background:var(--bg3);color:var(--tx2)}#minePinSubmit{background:var(--acg);color:var(--acl);border-color:rgba(91,163,217,.4)}
 </style>
 <div id="minePinOverlay" role="dialog" aria-modal="true" aria-labelledby="minePinTitle">
   <div id="minePinCard">
-    <h2 id="minePinTitle">PIN required</h2>
-    <p>Enter the 9-digit PIN to select the Mine server.</p>
+    <div class="pin-top"><span>SESSION / ACCESS CONTROL</span><span class="pin-mark">NODE 03</span></div><div class="pin-emblem" aria-hidden="true">[ # ]</div><h2 id="minePinTitle">Private node authentication</h2><p>This connection requires local authorization. Enter the 9-digit access code to continue.</p>
     <input id="minePinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="9" aria-label="9-digit PIN">
-    <div id="minePinError" role="status"></div>
+    <div id="minePinError" role="status" aria-live="polite"></div>
     <div id="minePinActions"><button id="minePinCancel" type="button">Cancel</button><button id="minePinSubmit" type="button">Unlock</button></div>
   </div>
 </div>
