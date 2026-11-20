@@ -10,6 +10,98 @@
 <script src="/sail/baremux/index.js"></script>
 <script src="/sail/scram/scramjet.all.js"></script>
 <style>
+
+/* PIN Modal */
+#pin-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.75);
+    backdrop-filter: blur(6px);
+}
+
+#pin-overlay.show {
+    display: flex;
+}
+
+.pin-modal {
+    width: 320px;
+    padding: 28px;
+    background: #090b0e;
+    border: 1px solid #62491f;
+    box-shadow: 0 20px 60px rgba(0,0,0,.7);
+    text-align: center;
+    font-family: "Space Mono", monospace;
+}
+
+.pin-modal h2 {
+    margin: 0 0 8px;
+    color: #c99138;
+    font-size: 15px;
+    letter-spacing: .12em;
+}
+
+.pin-modal p {
+    margin: 0 0 20px;
+    color: #686e77;
+    font-size: 10px;
+}
+
+#pin-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    background: #050608;
+    border: 1px solid #282d35;
+    outline: none;
+    color: #c99138;
+    text-align: center;
+    font-family: "Space Mono", monospace;
+    font-size: 18px;
+    letter-spacing: .3em;
+}
+
+#pin-input:focus {
+    border-color: #806025;
+}
+
+#pin-error {
+    min-height: 16px;
+    margin-top: 10px;
+    color: #bd6060;
+    font-size: 10px;
+}
+
+.pin-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.pin-buttons button {
+    flex: 1;
+    padding: 10px;
+    cursor: pointer;
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+}
+
+#pin-cancel {
+    background: #090b0e;
+    border: 1px solid #282d35;
+    color: #858b94;
+}
+
+#pin-submit {
+    background: #0e0c08;
+    border: 1px solid #62491f;
+    color: #c99138;
+}
+
+
 /* SAIL // ORBITAL */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -176,7 +268,82 @@ function showLB(){loadingBar.style.opacity="1";loadingBar.style.width="70%";load
 function hideLB(){loadingBar.style.width="100%";loadingBar.style.transition="width .3s ease, opacity .4s ease .3s";setTimeout(()=>{loadingBar.style.opacity="0";loadingBar.style.width="0%";loadingBar.style.transition="none";},700);}
 function navigate(raw){let url=raw.trim();if(!url)return;if(!url.includes("."))url="https://duckduckgo.com/search?q="+encodeURIComponent(url);else if(!url.startsWith("http"))url="https://"+url;homepage.classList.add("hidden");showLB();bar.value=raw.trim();frame.src=scramjet.encodeUrl(url);}
 function nav(){navigate(bar.value);}function navHomeBar(){navigate(document.getElementById("home-bar").value);}function go(url){navigate(url);}function goHome(){homepage.classList.remove("hidden");frame.src="";bar.value="";document.getElementById("home-bar").value="";}
-function switchWisp(){const value=document.getElementById("wispSelect").value;connection.setTransport("/sail/libcurl/index.mjs",[{websocket:value}]);probe(value);}
+const PIN = "134581012";
+
+let previousWisp = "wss://wisp.mercurywork.shop/";
+let pendingWisp = null;
+
+const wispSelect = document.getElementById("wispSelect");
+const pinOverlay = document.getElementById("pin-overlay");
+const pinInput = document.getElementById("pin-input");
+const pinError = document.getElementById("pin-error");
+
+function switchWisp() {
+    const value = wispSelect.value;
+
+    // Require PIN for Mine
+    if (value === "wss://geometry1.gleeze.com/") {
+        pendingWisp = value;
+
+        // Revert selection until PIN is entered
+        wispSelect.value = previousWisp;
+
+        pinInput.value = "";
+        pinError.textContent = "";
+        pinOverlay.classList.add("show");
+
+        setTimeout(() => pinInput.focus(), 100);
+        return;
+    }
+
+    // Other servers don't require PIN
+    previousWisp = value;
+    connection.setTransport(
+        "/sail/libcurl/index.mjs",
+        [{ websocket: value }]
+    );
+    probe(value);
+}
+
+function unlockWisp() {
+    if (pinInput.value === PIN) {
+        pinOverlay.classList.remove("show");
+
+        previousWisp = pendingWisp;
+        wispSelect.value = pendingWisp;
+
+        connection.setTransport(
+            "/sail/libcurl/index.mjs",
+            [{ websocket: pendingWisp }]
+        );
+
+        probe(pendingWisp);
+
+        pendingWisp = null;
+        pinInput.value = "";
+        pinError.textContent = "";
+    } else {
+        pinError.textContent = "Incorrect PIN. Try again.";
+        pinInput.value = "";
+        pinInput.focus();
+    }
+}
+
+function cancelPin() {
+    pinOverlay.classList.remove("show");
+    pinInput.value = "";
+    pinError.textContent = "";
+    pendingWisp = null;
+    wispSelect.value = previousWisp;
+}
+
+document.getElementById("pin-submit").addEventListener("click", unlockWisp);
+document.getElementById("pin-cancel").addEventListener("click", cancelPin);
+
+pinInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") unlockWisp();
+    if (event.key === "Escape") cancelPin();
+});
 frame.addEventListener("load",hideLB);
 bar.addEventListener("keydown",event=>{if(event.key==="Enter")nav();});
 document.getElementById("home-bar").addEventListener("keydown",event=>{if(event.key==="Enter")navHomeBar();});
@@ -256,6 +423,28 @@ probe("wss://wisp.mercurywork.shop/");
 })();
 </script>
 
+<div id="pin-overlay">
+    <div class="pin-modal">
+        <h2>ACCESS REQUIRED</h2>
+        <p>Enter the 9-digit PIN to use this Wisp node.</p>
+
+        <input
+            id="pin-input"
+            type="password"
+            inputmode="numeric"
+            maxlength="9"
+            placeholder="•••••••••"
+            autocomplete="off"
+        >
+
+        <div id="pin-error"></div>
+
+        <div class="pin-buttons">
+            <button id="pin-cancel">CANCEL</button>
+            <button id="pin-submit">UNLOCK</button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
