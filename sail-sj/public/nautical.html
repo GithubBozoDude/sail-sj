@@ -93,7 +93,21 @@
         @media(max-width:950px){.hp-left{width:300px;}.compass{width:170px;height:170px;}.hp-right{padding:30px;}}
         @media(max-width:760px){.hp-left{display:none;}.hp-right{padding:25px;}.scgrid{grid-template-columns:repeat(2,1fr);}.wlbl,.slbl{display:none;}}
         @media(max-width:560px){.brand{width:58px;padding:0;justify-content:center;}.brand-name{display:none;}.nav-r{display:none;}.hp-right{padding:20px;}.spre{display:none;}#home-bar{border-right:0;}#home-go{padding:0 14px;}.scgrid{grid-template-columns:1fr;grid-template-rows:repeat(8,1fr);}.hp-bot{padding:0 15px;}}
-    </style>
+    /* NAUTICAL / NAVAL CONTROL PANEL */
+#minePinOverlay{background:rgba(1,2,4,.84);backdrop-filter:blur(5px);}
+#minePinCard{width:min(370px,100%);padding:22px;border-radius:3px;background:#080a0d;color:var(--text);border:1px solid #493819;box-shadow:0 20px 65px rgba(0,0,0,.65);font-family:var(--sans);}
+#minePinCard:before{content:"NAVIGATION SYSTEM  /  AUTHORIZATION";display:block;padding-bottom:11px;margin-bottom:15px;border-bottom:1px solid var(--line);color:var(--amber);font:9px var(--mono);letter-spacing:.14em;}
+#minePinCard h2{font:700 15px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#c4c7cc;}
+#minePinCard p{color:var(--text2);font:11px/1.65 var(--mono);}
+#minePinInput{border-radius:2px;background:#020304;border-color:#282d35;color:var(--amber);font:14px var(--mono);letter-spacing:.22em;}
+#minePinInput:focus{border-color:var(--amber-soft);box-shadow:0 0 0 1px rgba(201,145,56,.13);}
+#minePinError{color:var(--red);font:10px var(--mono);}
+#minePinActions button{border-radius:2px;font:700 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;}
+#minePinCancel{background:#0e0c08;color:#858b94;border-color:#282d35;}
+#minePinSubmit{background:#171208;color:var(--amber);border-color:#62491f;}
+#minePinActions button:hover{border-color:#876528;}
+
+</style>
     <script src="/sail/baremux/index.js"></script>
     <script src="/sail/scram/scramjet.all.js"></script>
     <script>navigator.serviceWorker.register("/sail/sw.js");</script>
